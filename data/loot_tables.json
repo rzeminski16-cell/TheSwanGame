@@ -1,0 +1,30 @@
+{
+  "loot_tables": [
+    {
+      "id": "basic_dungeon_loot",
+      "drops": [
+        { "item_id": "damage_ring", "weight": 15 },
+        { "item_id": "crit_charm", "weight": 15 },
+        { "item_id": "speed_boots", "weight": 15 },
+        { "item_id": "attack_speed_charm", "weight": 15 },
+        { "item_id": "health_jacket", "weight": 10 },
+        { "item_id": "dodge_coin", "weight": 10 },
+        { "item_id": "balanced_blade", "weight": 8 },
+        { "item_id": "hunter_charm", "weight": 8 },
+        { "item_id": "blood_pendant", "weight": 2 },
+        { "item_id": "golden_idol", "weight": 2 }
+      ]
+    },
+    {
+      "id": "boss_loot",
+      "drops": [
+        { "item_id": "balanced_blade", "weight": 20 },
+        { "item_id": "hunter_charm", "weight": 20 },
+        { "item_id": "health_jacket", "weight": 15 },
+        { "item_id": "dodge_coin", "weight": 15 },
+        { "item_id": "blood_pendant", "weight": 15 },
+        { "item_id": "golden_idol", "weight": 15 }
+      ]
+    }
+  ]
+}

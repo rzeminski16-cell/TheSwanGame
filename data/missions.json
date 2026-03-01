@@ -1,0 +1,77 @@
+{
+  "missions": [
+    {
+      "id": "mission_tutorial",
+      "display_name": "Move In",
+      "type": "story",
+      "objectives": [
+        { "type": "talk_to_npc", "npc_id": "hannan" },
+        { "type": "reach_location", "location_id": "player_house" }
+      ],
+      "rewards": {
+        "money": 50,
+        "xp": 50,
+        "items": []
+      },
+      "next_mission_id": "mission_papers"
+    },
+    {
+      "id": "mission_papers",
+      "display_name": "Find Papers",
+      "type": "story",
+      "objectives": [
+        { "type": "talk_to_npc", "npc_id": "lewis" },
+        { "type": "return_home" }
+      ],
+      "rewards": {
+        "money": 0,
+        "xp": 100,
+        "items": []
+      },
+      "next_mission_id": "mission_first_delivery"
+    },
+    {
+      "id": "mission_first_delivery",
+      "display_name": "First Delivery",
+      "type": "story",
+      "objectives": [
+        { "type": "talk_to_npc", "npc_id": "luka" },
+        { "type": "deliver_item", "delivery_job_id": "delivery_basic_1" }
+      ],
+      "rewards": {
+        "money": 50,
+        "xp": 150,
+        "items": []
+      },
+      "next_mission_id": "mission_crab_cave"
+    },
+    {
+      "id": "mission_crab_cave",
+      "display_name": "Enter Crab Cave",
+      "type": "story",
+      "objectives": [
+        { "type": "enter_dungeon", "dungeon_id": "crab_cave" }
+      ],
+      "rewards": {
+        "money": 100,
+        "xp": 200,
+        "items": []
+      },
+      "next_mission_id": "mission_pay_rent"
+    },
+    {
+      "id": "mission_pay_rent",
+      "display_name": "Pay Rent",
+      "type": "story",
+      "objectives": [
+        { "type": "reach_location", "location_id": "rent_box" }
+      ],
+      "rewards": {
+        "money": 0,
+        "xp": 100,
+        "items": []
+      },
+      "next_mission_id": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "delivery_jobs": [
+    {
+      "id": "delivery_basic_1",
+      "base_reward": 50,
+      "difficulty_modifier": 1.0,
+      "delivery_points": 3,
+      "time_limit": null,
+      "risk_level": 0
+    }
+  ]
+}

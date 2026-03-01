@@ -1,0 +1,59 @@
+{
+  "dungeons": [
+    {
+      "id": "crab_cave",
+      "display_name": "Crab Cave",
+      "type": "story",
+      "base_difficulty": 1,
+      "rooms": [
+        {
+          "room_type": "combat",
+          "enemy_groups": [
+            { "enemy_id": "melee_rat", "count": 5 }
+          ]
+        },
+        {
+          "room_type": "combat",
+          "enemy_groups": [
+            { "enemy_id": "melee_rat", "count": 3 },
+            { "enemy_id": "ranged_crab", "count": 2 }
+          ]
+        },
+        {
+          "room_type": "boss",
+          "enemy_id": "crab_king"
+        }
+      ],
+      "replayable": false
+    },
+    {
+      "id": "abandoned_tunnel",
+      "display_name": "Abandoned Tunnel",
+      "type": "replayable",
+      "base_difficulty": 1,
+      "rooms": [
+        {
+          "room_type": "combat",
+          "enemy_groups": [
+            { "enemy_id": "melee_rat", "count": 4 },
+            { "enemy_id": "ranged_crab", "count": 1 }
+          ]
+        },
+        {
+          "room_type": "combat",
+          "enemy_groups": [
+            { "enemy_id": "ranged_crab", "count": 3 }
+          ]
+        },
+        {
+          "room_type": "combat",
+          "enemy_groups": [
+            { "enemy_id": "melee_rat", "count": 3 },
+            { "enemy_id": "ranged_crab", "count": 3 }
+          ]
+        }
+      ],
+      "replayable": true
+    }
+  ]
+}

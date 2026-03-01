@@ -1,0 +1,55 @@
+{
+  "xp_curve_exponent": 1.5,
+  "base_xp_per_level": 100,
+  "dungeon_scaling_per_completion": 0.15,
+  "enemy_health_scaling": 0.12,
+  "enemy_damage_scaling": 0.08,
+  "enemy_spawn_scaling": 0.10,
+  "loot_quality_scaling": 0.10,
+  "base_delivery_reward": 50,
+  "base_weekly_rent": 250,
+  "max_player_level_demo": 5,
+  "difficulty_multiplier_cap": 3.0,
+  "epic_chance_cap": 0.20,
+  "base_rarity_distribution": {
+    "common": 0.70,
+    "rare": 0.25,
+    "epic": 0.05
+  },
+  "rarity_scaling_per_completion": {
+    "rare_bonus": 0.02,
+    "epic_bonus": 0.01
+  },
+  "player_base_stats": {
+    "health": 100,
+    "stamina": 100,
+    "damage": 10,
+    "attack_speed": 1.0,
+    "move_speed": 120,
+    "crit_chance": 0.05,
+    "dodge_chance": 0.05
+  },
+  "level_up_bonuses": {
+    "health": 5,
+    "damage_percent": 0.02,
+    "attack_speed_percent": 0.01,
+    "move_speed_percent": 0.01
+  },
+  "soft_caps": {
+    "crit_chance": {
+      "max": 0.40,
+      "scaling_factor": 0.08
+    },
+    "dodge_chance": {
+      "max": 0.40,
+      "scaling_factor": 0.08
+    }
+  },
+  "death_penalty": {
+    "money_loss_percent": 0.10,
+    "item_loss_count": 1
+  },
+  "loot_despawn_time": 10.0,
+  "day_length_minutes": 15,
+  "night_length_minutes": 7
+}
