@@ -293,23 +293,23 @@ godot --headless --path . --scene tests/TestPhase0Runtime.tscn
 These tests require visual inspection in the Godot editor and cannot be automated:
 
 #### Editor Verification
-- [ ] Project opens in Godot 4.x editor without errors in the bottom panel
-- [ ] No red error messages in the Output panel when the editor loads
-- [ ] `project.godot` shows all 11 autoloads in Project → Project Settings → Autoload tab
-- [ ] `scenes/Main.tscn` opens and shows SceneManager, UIManager, AudioManager as children
+- [x] Project opens in Godot 4.x editor without errors in the bottom panel
+- [x] No red error messages in the Output panel when the editor loads
+- [x] `project.godot` shows all 11 autoloads in Project → Project Settings → Autoload tab
+- [x] `scenes/Main.tscn` opens and shows SceneManager, UIManager, AudioManager as children
 
 #### Runtime Visual Verification
-- [ ] Running the project (F5) opens a game window at 1280x720
-- [ ] The TestPlayground label text is visible in the window
-- [ ] Output panel shows DataManager success messages (no red errors)
-- [ ] Output panel shows "Main: Game starting." followed by correct item/enemy/skill counts
-- [ ] In the Remote tab (while running), all 11 autoloads are visible under root
-- [ ] In the Remote tab, Main has SceneManager, UIManager, AudioManager children
+- [x] Running the project (F5) opens a game window at 1280x720
+- [x] The TestPlayground label text is visible in the window
+- [x] Output panel shows DataManager success messages (no red errors)
+- [x] Output panel shows "Main: Game starting." followed by correct item/enemy/skill counts
+- [x] In the Remote tab (while running), all 11 autoloads are visible under root
+- [x] In the Remote tab, Main has SceneManager, UIManager, AudioManager children
 
 #### Input Map Verification
-- [ ] Project → Project Settings → Input Map shows: move_up (W), move_down (S), move_left (A), move_right (D)
-- [ ] Input Map shows: interact (E), attack (Left Mouse), ability_1 (Q), ability_2 (R)
-- [ ] Input Map shows: toggle_inventory (I), toggle_skill_tree (K), pause (Escape)
+- [x] Project → Project Settings → Input Map shows: move_up (W), move_down (S), move_left (A), move_right (D)
+- [x] Input Map shows: interact (E), attack (Left Mouse), ability_1 (Q), ability_2 (R)
+- [x] Input Map shows: toggle_inventory (I), toggle_skill_tree (K), pause (Escape)
 
 ---
 
