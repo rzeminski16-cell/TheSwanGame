@@ -171,7 +171,7 @@ func get_effective_stat(player_id: int, stat: String) -> float:
 
 
 func _get_level_bonuses(stat: String, level: int) -> Dictionary:
-	var bonuses := DataManager.get_config_value("level_up_bonuses", {})
+	var bonuses: Dictionary = DataManager.get_config_value("level_up_bonuses", {})
 	var levels_gained: int = level - 1  # Level 1 = no bonus
 
 	var flat: float = 0.0
