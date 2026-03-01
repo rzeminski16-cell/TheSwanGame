@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://test_playground"]
+
+[node name="TestPlayground" type="Node2D"]
+
+[node name="Label" type="Label" parent="."]
+offset_left = 200.0
+offset_top = 150.0
+offset_right = 600.0
+offset_bottom = 200.0
+text = "Test Playground — Phase 0
+Scene loaded successfully.
+Check Output panel for DataManager results."

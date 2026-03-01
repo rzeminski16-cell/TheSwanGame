@@ -1,0 +1,169 @@
+{
+  "skills": [
+    {
+      "id": "combat_damage_1",
+      "category": "combat",
+      "display_name": "Sharpened Instinct",
+      "description": "+5% damage",
+      "effects": [
+        { "stat": "damage", "modifier_type": "percent", "value": 0.05 }
+      ],
+      "max_level": 1,
+      "requirements": []
+    },
+    {
+      "id": "combat_attack_speed_1",
+      "category": "combat",
+      "display_name": "Quick Hands",
+      "description": "+5% attack speed",
+      "effects": [
+        { "stat": "attack_speed", "modifier_type": "percent", "value": 0.05 }
+      ],
+      "max_level": 1,
+      "requirements": []
+    },
+    {
+      "id": "combat_crit_1",
+      "category": "combat",
+      "display_name": "Keen Eye",
+      "description": "+5% crit chance",
+      "effects": [
+        { "stat": "crit_chance", "modifier_type": "percent", "value": 0.05 }
+      ],
+      "max_level": 1,
+      "requirements": ["combat_damage_1"]
+    },
+    {
+      "id": "combat_health_1",
+      "category": "combat",
+      "display_name": "Tough Skin",
+      "description": "+10 health",
+      "effects": [
+        { "stat": "health", "modifier_type": "flat", "value": 10 }
+      ],
+      "max_level": 1,
+      "requirements": []
+    },
+    {
+      "id": "combat_speed_1",
+      "category": "combat",
+      "display_name": "Fleet Footed",
+      "description": "+5% move speed",
+      "effects": [
+        { "stat": "move_speed", "modifier_type": "percent", "value": 0.05 }
+      ],
+      "max_level": 1,
+      "requirements": ["combat_health_1"]
+    },
+    {
+      "id": "economy_delivery_1",
+      "category": "economy",
+      "display_name": "Smooth Talker",
+      "description": "+10% delivery reward",
+      "effects": [
+        { "stat": "delivery_reward", "modifier_type": "percent", "value": 0.10 }
+      ],
+      "max_level": 1,
+      "requirements": []
+    },
+    {
+      "id": "economy_rent_1",
+      "category": "economy",
+      "display_name": "Haggler",
+      "description": "-10% rent",
+      "effects": [
+        { "stat": "rent_reduction", "modifier_type": "percent", "value": 0.10 }
+      ],
+      "max_level": 1,
+      "requirements": []
+    },
+    {
+      "id": "economy_loot_1",
+      "category": "economy",
+      "display_name": "Lucky Find",
+      "description": "+5% loot chance",
+      "effects": [
+        { "stat": "loot_chance", "modifier_type": "percent", "value": 0.05 }
+      ],
+      "max_level": 1,
+      "requirements": ["economy_delivery_1"]
+    },
+    {
+      "id": "economy_money_1",
+      "category": "economy",
+      "display_name": "Penny Pincher",
+      "description": "+10% money drop",
+      "effects": [
+        { "stat": "money_drop", "modifier_type": "percent", "value": 0.10 }
+      ],
+      "max_level": 1,
+      "requirements": ["economy_rent_1"]
+    },
+    {
+      "id": "economy_xp_1",
+      "category": "economy",
+      "display_name": "Fast Learner",
+      "description": "+5% XP gain",
+      "effects": [
+        { "stat": "xp_gain", "modifier_type": "percent", "value": 0.05 }
+      ],
+      "max_level": 1,
+      "requirements": ["economy_loot_1"]
+    },
+    {
+      "id": "personality_dodge_1",
+      "category": "personality",
+      "display_name": "Slippery",
+      "description": "+5% dodge",
+      "effects": [
+        { "stat": "dodge_chance", "modifier_type": "percent", "value": 0.05 }
+      ],
+      "max_level": 1,
+      "requirements": []
+    },
+    {
+      "id": "personality_stamina_1",
+      "category": "personality",
+      "display_name": "Endurance",
+      "description": "+10 stamina",
+      "effects": [
+        { "stat": "stamina", "modifier_type": "flat", "value": 10 }
+      ],
+      "max_level": 1,
+      "requirements": []
+    },
+    {
+      "id": "personality_boss_damage_1",
+      "category": "personality",
+      "display_name": "Giant Slayer",
+      "description": "+5% boss damage",
+      "effects": [
+        { "stat": "boss_damage", "modifier_type": "percent", "value": 0.05 }
+      ],
+      "max_level": 1,
+      "requirements": ["personality_dodge_1"]
+    },
+    {
+      "id": "personality_dungeon_speed_1",
+      "category": "personality",
+      "display_name": "Dungeon Runner",
+      "description": "+5% movement in dungeon",
+      "effects": [
+        { "stat": "dungeon_move_speed", "modifier_type": "percent", "value": 0.05 }
+      ],
+      "max_level": 1,
+      "requirements": ["personality_stamina_1"]
+    },
+    {
+      "id": "personality_elite_damage_1",
+      "category": "personality",
+      "display_name": "Bully",
+      "description": "+5% elite damage",
+      "effects": [
+        { "stat": "elite_damage", "modifier_type": "percent", "value": 0.05 }
+      ],
+      "max_level": 1,
+      "requirements": ["personality_boss_damage_1"]
+    }
+  ]
+}

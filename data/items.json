@@ -1,0 +1,112 @@
+{
+  "items": [
+    {
+      "id": "damage_ring",
+      "display_name": "Rusty Ring",
+      "rarity": "common",
+      "type": "passive",
+      "effects": [
+        { "stat": "damage", "modifier_type": "percent", "value": 0.10 }
+      ],
+      "stackable": false
+    },
+    {
+      "id": "crit_charm",
+      "display_name": "Sharpened Tooth",
+      "rarity": "common",
+      "type": "passive",
+      "effects": [
+        { "stat": "crit_chance", "modifier_type": "percent", "value": 0.05 }
+      ],
+      "stackable": false
+    },
+    {
+      "id": "speed_boots",
+      "display_name": "Light Boots",
+      "rarity": "common",
+      "type": "passive",
+      "effects": [
+        { "stat": "move_speed", "modifier_type": "percent", "value": 0.10 }
+      ],
+      "stackable": false
+    },
+    {
+      "id": "attack_speed_charm",
+      "display_name": "Adrenal Charm",
+      "rarity": "common",
+      "type": "passive",
+      "effects": [
+        { "stat": "attack_speed", "modifier_type": "percent", "value": 0.10 }
+      ],
+      "stackable": false
+    },
+    {
+      "id": "health_jacket",
+      "display_name": "Thick Jacket",
+      "rarity": "common",
+      "type": "passive",
+      "effects": [
+        { "stat": "health", "modifier_type": "flat", "value": 15 }
+      ],
+      "stackable": false
+    },
+    {
+      "id": "dodge_coin",
+      "display_name": "Lucky Coin",
+      "rarity": "common",
+      "type": "passive",
+      "effects": [
+        { "stat": "dodge_chance", "modifier_type": "percent", "value": 0.05 }
+      ],
+      "stackable": false
+    },
+    {
+      "id": "balanced_blade",
+      "display_name": "Balanced Blade",
+      "rarity": "common",
+      "type": "passive",
+      "effects": [
+        { "stat": "damage", "modifier_type": "percent", "value": 0.05 },
+        { "stat": "attack_speed", "modifier_type": "percent", "value": 0.05 }
+      ],
+      "stackable": false
+    },
+    {
+      "id": "hunter_charm",
+      "display_name": "Hunter Charm",
+      "rarity": "common",
+      "type": "passive",
+      "effects": [
+        { "stat": "crit_chance", "modifier_type": "percent", "value": 0.05 },
+        { "stat": "move_speed", "modifier_type": "percent", "value": 0.05 }
+      ],
+      "stackable": false
+    },
+    {
+      "id": "blood_pendant",
+      "display_name": "Blood Pendant",
+      "rarity": "rare",
+      "type": "passive",
+      "effects": [
+        { "stat": "damage", "modifier_type": "percent", "value": 0.15 },
+        { "stat": "dodge_chance", "modifier_type": "percent", "value": -0.05 }
+      ],
+      "stackable": false
+    },
+    {
+      "id": "golden_idol",
+      "display_name": "Golden Idol",
+      "rarity": "rare",
+      "type": "passive",
+      "effects": [
+        { "stat": "health", "modifier_type": "percent", "value": 0.10 },
+        { "stat": "damage", "modifier_type": "percent", "value": 0.10 },
+        { "stat": "attack_speed", "modifier_type": "percent", "value": 0.10 },
+        { "stat": "move_speed", "modifier_type": "percent", "value": 0.10 },
+        { "stat": "crit_chance", "modifier_type": "percent", "value": 0.10 },
+        { "stat": "dodge_chance", "modifier_type": "percent", "value": 0.10 }
+      ],
+      "stackable": false
+    }
+  ]
+}
