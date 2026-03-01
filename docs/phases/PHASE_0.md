@@ -236,62 +236,80 @@ If a JSON file fails to load or has structural issues, DataManager prints an err
 
 ---
 
-## Testing Checklist
+## Testing
 
-### Project Launch
-- [ ] Project opens in Godot 4.x editor without errors
-- [ ] Running the project shows a window (even if blank/placeholder)
-- [ ] No error messages in the Output panel on startup
-- [ ] All 11 autoloads visible in the scene tree (Remote tab while running)
+Phase 0 tests are split into **automated** (run via scripts) and **manual** (require a human in the Godot editor).
 
-### DataManager Validation
-- [ ] `DataManager.get_config()` returns a dictionary with all expected keys (`xp_curve_exponent`, `base_xp_per_level`, etc.)
-- [ ] `DataManager.get_all_enemies()` returns exactly 3 enemies
-- [ ] `DataManager.get_enemy("melee_rat")` returns the Cave Rat with health 50, damage 8
-- [ ] `DataManager.get_enemy("ranged_crab")` returns the Spitter Crab
-- [ ] `DataManager.get_enemy("crab_king")` returns the Crab King boss
-- [ ] `DataManager.get_all_items()` returns exactly 10 items
-- [ ] `DataManager.get_item("damage_ring")` returns Rusty Ring with +10% damage
-- [ ] `DataManager.get_all_skills()` returns exactly 15 skill nodes
-- [ ] Skills are split: 5 combat, 5 economy, 5 personality
-- [ ] `DataManager.get_loot_table("basic_dungeon_loot")` returns valid drop table with weights
-- [ ] `DataManager.get_all_dungeons()` returns exactly 2 dungeons
-- [ ] `DataManager.get_dungeon("crab_cave")` is type "story" with replayable = false
-- [ ] `DataManager.get_dungeon("abandoned_tunnel")` is type "replayable"
-- [ ] `DataManager.get_all_missions()` returns exactly 5 missions
-- [ ] Mission chain: tutorial → papers → delivery → crab_cave → rent (verify `next_mission_id`)
-- [ ] `DataManager.get_delivery_jobs()` returns 1 job with base_reward 50
+### Automated Test Scripts
 
-### SceneManager
-- [ ] SceneManager can load `TestPlayground.tscn`
-- [ ] SceneManager emits `scene_changed` signal
-- [ ] Only one gameplay scene is active at a time
-- [ ] GameState.current_scene_type updates on scene change
+Two test scripts cover all data validation, value correctness, cross-references, autoload existence, manager API availability, and SceneManager functionality.
 
-### Manager Stubs
-- [ ] Each stub manager loads without errors
-- [ ] Each stub has its public API methods defined (they can be empty/return defaults)
-- [ ] No manager depends on another manager's implementation (stubs are independent)
+#### 1. Python JSON Validation (no Godot required)
 
-### Data Integrity
-- [ ] Every `enemy_id` in `dungeons.json` rooms exists in `enemies.json`
-- [ ] Every `loot_table_id` in `enemies.json` exists in `loot_tables.json`
-- [ ] Every `item_id` in `loot_tables.json` exists in `items.json`
-- [ ] Every `next_mission_id` in `missions.json` exists (or is null)
-- [ ] Every skill `requirements` ID in `skills.json` exists
-- [ ] No duplicate IDs across any JSON file
+Validates all 8 JSON data files outside of Godot — structure, required fields, counts, exact values from the blueprint, cross-references, and duplicate ID checks.
 
-### JSON Value Verification (spot checks against blueprint)
-- [ ] `global_config.json`: `xp_curve_exponent` = 1.5, `base_xp_per_level` = 100
-- [ ] `global_config.json`: `base_weekly_rent` = 250, `max_player_level_demo` = 5
-- [ ] `global_config.json`: `dungeon_scaling_per_completion` = 0.15
-- [ ] Player base stats: health 100, stamina 100, damage 10, move_speed 120
-- [ ] Cave Rat: health 50, damage 8, xp_reward 10, money_drop 5-10
-- [ ] Crab King: type "boss", xp_reward 150, money_drop 150-250
-- [ ] Crab Cave: 2 combat rooms + 1 boss room, replayable = false
-- [ ] Abandoned Tunnel: type "replayable", rooms use randomized groups
-- [ ] Blood Pendant: +15% damage, -5% dodge (rare item)
-- [ ] Golden Idol: +10% all stats (rare item)
+```bash
+# From project root:
+python3 tests/test_phase0_json.py
+```
+
+**What it covers (363 checks):**
+- All 8 JSON files exist and parse correctly
+- Correct counts: 3 enemies, 10 items, 15 skills (5/5/5 split), 2 dungeons, 5 missions, 1 delivery job
+- Every value from `global_config.json` matches spec (XP curve, scaling, rent, base stats, soft caps)
+- Every enemy stat matches blueprint (Cave Rat, Spitter Crab, Crab King)
+- Item rarity, effects, and 25%-cap enforcement
+- Skill categories, requirements, max_level
+- Dungeon room structure (Crab Cave: 2 combat + 1 boss, Abandoned Tunnel: replayable)
+- Mission chain order (tutorial → papers → delivery → crab_cave → rent)
+- Loot table weights and item references
+- All cross-references valid (enemy→loot_table, loot_table→item, dungeon→enemy, mission→next_mission, skill→requirement)
+- No duplicate IDs across all collections
+
+#### 2. GDScript Runtime Tests (requires Godot)
+
+Tests everything that needs the engine running — autoloads in the scene tree, DataManager API calls returning live data, GameState defaults, manager stub methods being callable, SceneManager signals/methods.
+
+```bash
+# From command line (headless):
+godot --headless --path . --scene tests/TestPhase0Runtime.tscn
+
+# Or from editor:
+# Open tests/TestPhase0Runtime.tscn and press F5 (or run scene)
+```
+
+**What it covers (~100 checks):**
+- All 11 autoload singletons present in the scene tree
+- DataManager API returns correct data at runtime (config, enemies, items, skills, loot tables, dungeons, missions, delivery jobs)
+- DataManager cross-reference validation produced zero load errors
+- GameState default values (is_host=true, player_count=1, is_in_dungeon=false, etc.)
+- All stub managers have callable methods returning correct default types
+- SceneManager exists under Main, has `change_scene`/`get_current_scene` methods and `scene_changed` signal
+
+---
+
+### Manual Testing Checklist (Human Required)
+
+These tests require visual inspection in the Godot editor and cannot be automated:
+
+#### Editor Verification
+- [ ] Project opens in Godot 4.x editor without errors in the bottom panel
+- [ ] No red error messages in the Output panel when the editor loads
+- [ ] `project.godot` shows all 11 autoloads in Project → Project Settings → Autoload tab
+- [ ] `scenes/Main.tscn` opens and shows SceneManager, UIManager, AudioManager as children
+
+#### Runtime Visual Verification
+- [ ] Running the project (F5) opens a game window at 1280x720
+- [ ] The TestPlayground label text is visible in the window
+- [ ] Output panel shows DataManager success messages (no red errors)
+- [ ] Output panel shows "Main: Game starting." followed by correct item/enemy/skill counts
+- [ ] In the Remote tab (while running), all 11 autoloads are visible under root
+- [ ] In the Remote tab, Main has SceneManager, UIManager, AudioManager children
+
+#### Input Map Verification
+- [ ] Project → Project Settings → Input Map shows: move_up (W), move_down (S), move_left (A), move_right (D)
+- [ ] Input Map shows: interact (E), attack (Left Mouse), ability_1 (Q), ability_2 (R)
+- [ ] Input Map shows: toggle_inventory (I), toggle_skill_tree (K), pause (Escape)
 
 ---
 
