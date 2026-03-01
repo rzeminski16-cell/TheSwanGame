@@ -56,3 +56,7 @@ func _process(_delta: float) -> void:
 	label.text += "Move Speed: %.1f\n" % stats.get("move_speed", 0)
 	label.text += "Crit Chance: %.1f%%\n" % (stats.get("crit_chance", 0) * 100)
 	label.text += "Dodge Chance: %.1f%%\n" % (stats.get("dodge_chance", 0) * 100)
+	label.text += "---\n"
+	label.text += "Money: %d\n" % EconomyManager.get_money(_player_id)
+	label.text += "Items: %d\n" % InventoryManager.get_inventory_count(_player_id)
+	label.text += "Enemies: %d\n" % CombatManager.get_active_enemy_count()

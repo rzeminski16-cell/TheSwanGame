@@ -9,15 +9,24 @@ signal rent_paid(player_id: int, amount: int)
 var _player_money: Dictionary = {}  # player_id → int
 
 
-func add_money(_player_id: int, _amount: int) -> void:
-	# Phase 3: Add money, emit signal
-	push_warning("EconomyManager.add_money() not yet implemented")
+func add_money(player_id: int, amount: int) -> void:
+	if amount <= 0:
+		return
+	if not _player_money.has(player_id):
+		_player_money[player_id] = 0
+	_player_money[player_id] += amount
+	money_changed.emit(player_id, _player_money[player_id])
+	print("EconomyManager: Player %d gained %d money (total: %d)" % [player_id, amount, _player_money[player_id]])
 
 
-func deduct_money(_player_id: int, _amount: int) -> bool:
-	# Phase 3: Deduct if sufficient, return success
-	push_warning("EconomyManager.deduct_money() not yet implemented")
-	return false
+func deduct_money(player_id: int, amount: int) -> bool:
+	if not _player_money.has(player_id):
+		_player_money[player_id] = 0
+	if _player_money[player_id] < amount:
+		return false
+	_player_money[player_id] -= amount
+	money_changed.emit(player_id, _player_money[player_id])
+	return true
 
 
 func get_money(player_id: int) -> int:

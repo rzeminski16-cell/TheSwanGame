@@ -41,9 +41,9 @@ position = Vector2(1290, 360)
 shape = SubResource("wall_right")
 
 [node name="Instructions" type="Label" parent="."]
-offset_left = 400.0
-offset_top = 650.0
-offset_right = 880.0
-offset_bottom = 710.0
-text = "WASD: Move | F1: +50 XP | F2: -10 HP | F3: Toggle Debug"
+offset_left = 100.0
+offset_top = 680.0
+offset_right = 1180.0
+offset_bottom = 720.0
+text = "WASD: Move | LMB: Shoot | F1: +XP | F2: -HP | F3: Debug | F4/F5/F6: Spawn Enemy | F7: Item | F8: Clear"
 horizontal_alignment = 1
