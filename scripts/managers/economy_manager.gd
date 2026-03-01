@@ -31,4 +31,5 @@ func pay_rent(_player_id: int) -> bool:
 
 
 func get_weekly_rent() -> int:
-	return DataManager.get_config().get("base_weekly_rent", 250)
+	var config: Dictionary = DataManager.get_config()
+	return config.get("base_weekly_rent", 250)
