@@ -1,0 +1,37 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/entities/player.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/components/health_component.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/components/stamina_component.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/components/network_sync_component.gd" id="4"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
+size = Vector2(16, 16)
+
+[node name="Player" type="CharacterBody2D"]
+script = ExtResource("1")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_1")
+
+[node name="PlaceholderSprite" type="ColorRect" parent="."]
+offset_left = -8.0
+offset_top = -8.0
+offset_right = 8.0
+offset_bottom = 8.0
+color = Color(0.2, 0.6, 1.0, 1.0)
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2")
+
+[node name="StaminaComponent" type="Node" parent="."]
+script = ExtResource("3")
+
+[node name="NetworkSyncComponent" type="Node" parent="."]
+script = ExtResource("4")
+
+[node name="WeaponPrimary" type="Node2D" parent="."]
+
+[node name="AbilitySlot1" type="Node" parent="."]
+
+[node name="AbilitySlot2" type="Node" parent="."]
