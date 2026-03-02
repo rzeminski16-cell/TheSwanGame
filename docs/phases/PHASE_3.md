@@ -249,33 +249,32 @@ godot --headless --path . --scene tests/TestPhase3Runtime.tscn
 
 ### Manual Testing Checklist (Human Required)
 
-- [ ] Run TestPlayground — HUD visible (health/stamina/XP bars in top-left)
-- [ ] HUD shows money in bottom-left (yellow text)
-- [ ] HUD shows rent amount
-- [ ] HUD updates health bar when taking damage (F2)
-- [ ] HUD updates XP bar when gaining XP (F1)
-- [ ] Level up shows notification toast at top-center
-- [ ] F9 adds skill point — "Skill Points: N [K]" appears in HUD
-- [ ] K opens Skill Tree panel with 3 columns
-- [ ] Root skills (no requirements) are blue/clickable when SP available
-- [ ] Locked skills (missing requirements) are grey/disabled
-- [ ] Click an available skill → it turns green, SP decreases
-- [ ] Unlocking a prerequisite enables dependent skills
-- [ ] K again closes Skill Tree panel
-- [ ] I opens Inventory panel — shows items with rarity colors
-- [ ] F7 gives item — notification toast + inventory updates
-- [ ] Items show their stat effects (green for positive, red for negative)
-- [ ] Duplicate items show count (e.g. "Rusty Ring x2")
-- [ ] I again closes Inventory panel
-- [ ] ESC closes open panels (Skill Tree or Inventory) before pausing
-- [ ] ESC pauses game — "PAUSED" overlay with Resume button
-- [ ] Resume button or ESC again unpauses
-- [ ] Game tree actually pauses (enemies freeze, player stops)
-- [ ] Spawn enemies (F4/F5/F6) — damage popups appear on hits
-- [ ] Normal hits: red numbers
-- [ ] Critical hits: larger yellow numbers with "!"
-- [ ] Dodged attacks: grey "DODGE" text
-- [ ] F10 adds 500 money — HUD updates
-- [ ] F11 pays rent — notification shows success or failure
-- [ ] Unlocking damage skill visibly increases damage stat in debug overlay (F3)
-- [ ] F12 heals player to full — health bar fills up
+- [x] Run TestPlayground — HUD visible (health/stamina/XP bars in top-left)
+- [x] HUD shows money in bottom-left (yellow text)
+- [x] HUD shows rent amount
+- [x] HUD updates health bar when taking damage (F2)
+- [x] HUD updates XP bar when gaining XP (F1)
+- [x] Level up shows notification toast at top-center
+- [x] K opens Skill Tree panel with 3 columns
+- [x] Root skills (no requirements) are blue/clickable when SP available
+- [x] Locked skills (missing requirements) are grey/disabled
+- [x] Click an available skill → it turns green, SP decreases
+- [x] Unlocking a prerequisite enables dependent skills
+- [x] K again closes Skill Tree panel
+- [x] I opens Inventory panel — shows items with rarity colors
+- [x] F7 gives item — notification toast + inventory updates
+- [x] Items show their stat effects (green for positive, red for negative)
+- [x] Duplicate items show count (e.g. "Rusty Ring x2")
+- [x] I again closes Inventory panel
+- [x] ESC closes open panels (Skill Tree or Inventory) before pausing
+- [x] ESC pauses game — "PAUSED" overlay with Resume button
+- [x] Resume button or ESC again unpauses
+- [x] Game tree actually pauses (enemies freeze, player stops)
+- [x] Spawn enemies (F4/F5/F6) — damage popups appear on hits
+- [x] Normal hits: red numbers
+- [x] Critical hits: larger yellow numbers with "!"
+- [x] Dodged attacks: grey "DODGE" text
+- [x] F10 adds 500 money — HUD updates
+- [x] F11 pays rent — notification shows success or failure
+- [x] Unlocking damage skill visibly increases damage stat in debug overlay (F3)
+- [x] F12 heals player to full — health bar fills up
