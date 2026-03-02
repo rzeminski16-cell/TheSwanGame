@@ -1,8 +1,10 @@
 extends Node2D
 ## TestPlayground — Development testing scene.
-## Spawns a player and debug overlay for Phase 1-2 verification.
+## Spawns a player and debug overlay for Phase 1-3 verification.
 ## Debug keys: F1 +XP, F2 -HP, F3 overlay, F4 spawn rat, F5 spawn crab,
-##             F6 spawn boss, F7 give random item, F8 clear enemies
+##             F6 spawn boss, F7 give item, F8 clear enemies,
+##             F9 +1 SP, F10 +500 money, F11 pay rent, F12 heal full
+##             I = Inventory, K = Skill Tree, ESC = Pause
 
 func _ready() -> void:
 	# Spawn player at center
@@ -20,6 +22,8 @@ func _ready() -> void:
 	print("  F1: +50 XP | F2: -10 HP | F3: Debug overlay")
 	print("  F4: Spawn Cave Rat | F5: Spawn Spitter Crab | F6: Spawn Crab King")
 	print("  F7: Give random item | F8: Clear all enemies")
+	print("  F9: +1 Skill Point | F10: +500 Money | F11: Pay Rent | F12: Heal Full")
+	print("  I: Inventory | K: Skill Tree | ESC: Pause")
 
 
 func _input(event: InputEvent) -> void:
@@ -46,6 +50,16 @@ func _input(event: InputEvent) -> void:
 			KEY_F8:
 				CombatManager.clear_all_enemies()
 				print("TestPlayground: Cleared all enemies")
+			KEY_F9:
+				_give_skill_point()
+			KEY_F10:
+				EconomyManager.add_money(1, 500)
+				print("TestPlayground: Added 500 money")
+			KEY_F11:
+				var success := EconomyManager.pay_rent(1)
+				print("TestPlayground: Pay rent → %s" % ("success" if success else "failed"))
+			KEY_F12:
+				_heal_full()
 
 
 func _spawn_test_enemy(enemy_id: String) -> void:
@@ -71,3 +85,20 @@ func _give_random_item() -> void:
 	var item_id: String = item.get("id", "")
 	if InventoryManager.add_item(1, item_id):
 		print("TestPlayground: Gave item '%s' to player 1" % item.get("display_name", item_id))
+
+
+func _give_skill_point() -> void:
+	# Directly add a skill point for testing
+	var data: Dictionary = PlayerManager.get_save_data(1)
+	data["skill_points"] = data.get("skill_points", 0) + 1
+	PlayerManager.load_save_data(1, data)
+	print("TestPlayground: Added 1 skill point (total: %d)" % PlayerManager.get_skill_points(1))
+
+
+func _heal_full() -> void:
+	var player = PlayerManager.get_player_node(1)
+	if player:
+		var hc = player.get_node_or_null("HealthComponent")
+		if hc and hc.has_method("heal_full"):
+			hc.heal_full()
+			print("TestPlayground: Healed to full (HP: %.0f/%.0f)" % [hc.current_health, hc.max_health])

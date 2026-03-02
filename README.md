@@ -23,7 +23,10 @@ docs/
 │   └── ECONOMY_AND_SCALING_SPEC.md  # XP curves, dungeon scaling, loot formulas
 │
 └── phases/                          # Per-phase developer documentation
-    └── PHASE_0.md                   # Project skeleton + data foundation
+    ├── PHASE_0.md                   # Project skeleton + data foundation
+    ├── PHASE_1.md                   # Player character, movement, stats
+    ├── PHASE_2.md                   # Combat core, enemies, damage, loot
+    └── PHASE_3.md                   # Economy, UI, skill tree
 ```
 
 ---
@@ -83,10 +86,10 @@ After demo is stable, expand content.
 
 | Phase | Focus | Status |
 |-------|-------|--------|
-| 0 | Project Skeleton + Data Foundation | In Progress |
-| 1 | Player Character — Movement, Stats, Components | Planned |
-| 2 | Combat Core — Enemies, Damage, Loot | Planned |
-| 3 | Economy, UI, Skill Tree | Planned |
+| 0 | Project Skeleton + Data Foundation | Complete |
+| 1 | Player Character — Movement, Stats, Components | Complete |
+| 2 | Combat Core — Enemies, Damage, Loot | Complete |
+| 3 | Economy, UI, Skill Tree | Complete |
 | 4 | Dungeon System — Rooms, Waves, Boss, Scaling | Planned |
 | 5 | Overworld, Missions, Time, Delivery | Planned |
 | 6 | Save/Load + Game Flow | Planned |

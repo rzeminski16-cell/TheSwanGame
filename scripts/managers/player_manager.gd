@@ -135,6 +135,18 @@ func get_unlocked_skills(player_id: int) -> Array:
 	return _player_data[player_id]["unlocked_skills"]
 
 
+func deduct_skill_point(player_id: int) -> void:
+	if not _player_data.has(player_id):
+		return
+	_player_data[player_id]["skill_points"] = maxi(0, _player_data[player_id]["skill_points"] - 1)
+
+
+func set_unlocked_skills(player_id: int, skills: Array) -> void:
+	if not _player_data.has(player_id):
+		_init_player_data(player_id)
+	_player_data[player_id]["unlocked_skills"] = skills
+
+
 # --- Stat Computation ---
 
 func get_stats(player_id: int) -> Dictionary:
@@ -152,14 +164,19 @@ func get_effective_stat(player_id: int, stat: String) -> float:
 	var level: int = get_level(player_id)
 	var level_bonuses := _get_level_bonuses(stat, level)
 
-	# Item modifiers (from InventoryManager — returns {} until Phase 2)
+	# Item modifiers from InventoryManager
 	var item_mods: Dictionary = InventoryManager.get_passive_modifiers(player_id)
+
+	# Skill modifiers from SkillManager
+	var skill_mods: Dictionary = SkillManager.get_skill_modifiers(player_id)
 
 	var flat_bonus: float = level_bonuses["flat"]
 	flat_bonus += float(item_mods.get(stat + "_flat", 0))
+	flat_bonus += float(skill_mods.get(stat + "_flat", 0))
 
 	var percent_bonus: float = level_bonuses["percent"]
 	percent_bonus += float(item_mods.get(stat + "_percent", 0))
+	percent_bonus += float(skill_mods.get(stat + "_percent", 0))
 
 	var raw_value: float = (base_value + flat_bonus) * (1.0 + percent_bonus)
 
