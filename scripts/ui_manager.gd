@@ -65,6 +65,11 @@ func _connect_signals() -> void:
 	EconomyManager.rent_paid.connect(_on_rent_paid)
 	EconomyManager.rent_failed.connect(_on_rent_failed)
 
+	# Connect to DungeonManager for dungeon notifications
+	DungeonManager.dungeon_started.connect(_on_dungeon_started)
+	DungeonManager.dungeon_completed.connect(_on_dungeon_completed)
+	DungeonManager.dungeon_failed.connect(_on_dungeon_failed)
+
 
 func _input(event: InputEvent) -> void:
 	if not (event is InputEventKey and event.pressed):
@@ -268,3 +273,21 @@ func _on_rent_paid(_player_id: int, amount: int) -> void:
 
 func _on_rent_failed(_player_id: int, amount: int) -> void:
 	show_notification("Cannot afford rent! Need $%d" % amount, 4.0)
+
+
+func _on_dungeon_started(dungeon_id: String) -> void:
+	var dungeon_data: Dictionary = DataManager.get_dungeon(dungeon_id)
+	var dungeon_name: String = dungeon_data.get("display_name", dungeon_id)
+	show_notification("Entering: %s" % dungeon_name, 2.5)
+
+
+func _on_dungeon_completed(dungeon_id: String) -> void:
+	var dungeon_data: Dictionary = DataManager.get_dungeon(dungeon_id)
+	var dungeon_name: String = dungeon_data.get("display_name", dungeon_id)
+	show_notification("Dungeon Complete: %s" % dungeon_name, 3.0)
+
+
+func _on_dungeon_failed(dungeon_id: String) -> void:
+	var dungeon_data: Dictionary = DataManager.get_dungeon(dungeon_id)
+	var dungeon_name: String = dungeon_data.get("display_name", dungeon_id)
+	show_notification("Dungeon Failed: %s" % dungeon_name, 3.0)

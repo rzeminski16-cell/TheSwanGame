@@ -26,7 +26,8 @@ docs/
     ├── PHASE_0.md                   # Project skeleton + data foundation
     ├── PHASE_1.md                   # Player character, movement, stats
     ├── PHASE_2.md                   # Combat core, enemies, damage, loot
-    └── PHASE_3.md                   # Economy, UI, skill tree
+    ├── PHASE_3.md                   # Economy, UI, skill tree
+    └── PHASE_4.md                   # Dungeon system, rooms, waves, boss, scaling
 ```
 
 ---
@@ -90,7 +91,7 @@ After demo is stable, expand content.
 | 1 | Player Character — Movement, Stats, Components | Complete |
 | 2 | Combat Core — Enemies, Damage, Loot | Complete |
 | 3 | Economy, UI, Skill Tree | Complete |
-| 4 | Dungeon System — Rooms, Waves, Boss, Scaling | Planned |
+| 4 | Dungeon System — Rooms, Waves, Boss, Scaling | Complete |
 | 5 | Overworld, Missions, Time, Delivery | Planned |
 | 6 | Save/Load + Game Flow | Planned |
 | 7 | LAN Multiplayer | Planned |
