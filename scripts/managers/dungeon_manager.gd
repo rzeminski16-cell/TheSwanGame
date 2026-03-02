@@ -27,7 +27,7 @@ func get_completion_count(dungeon_id: String) -> int:
 func get_scaling(dungeon_id: String) -> Dictionary:
 	# Phase 4: Calculate all multipliers from completion count + config
 	var count := get_completion_count(dungeon_id)
-	var config := DataManager.get_config()
+	var config: Dictionary = DataManager.get_config()
 	return {
 		"difficulty_multiplier": 1.0 + (count * config.get("dungeon_scaling_per_completion", 0.15)),
 		"enemy_health_multiplier": 1.0 + (count * config.get("enemy_health_scaling", 0.12)),

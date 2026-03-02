@@ -1,12 +1,49 @@
-[gd_scene format=3 uid="uid://test_playground"]
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/test_playground.gd" id="1"]
+
+[sub_resource type="RectangleShape2D" id="wall_top"]
+size = Vector2(1280, 20)
+
+[sub_resource type="RectangleShape2D" id="wall_bottom"]
+size = Vector2(1280, 20)
+
+[sub_resource type="RectangleShape2D" id="wall_left"]
+size = Vector2(20, 720)
+
+[sub_resource type="RectangleShape2D" id="wall_right"]
+size = Vector2(20, 720)
 
 [node name="TestPlayground" type="Node2D"]
+script = ExtResource("1")
 
-[node name="Label" type="Label" parent="."]
-offset_left = 200.0
-offset_top = 150.0
-offset_right = 600.0
-offset_bottom = 200.0
-text = "Test Playground — Phase 0
-Scene loaded successfully.
-Check Output panel for DataManager results."
+[node name="Background" type="ColorRect" parent="."]
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0.12, 0.12, 0.15, 1.0)
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="Top" type="CollisionShape2D" parent="Walls"]
+position = Vector2(640, -10)
+shape = SubResource("wall_top")
+
+[node name="Bottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(640, 730)
+shape = SubResource("wall_bottom")
+
+[node name="Left" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-10, 360)
+shape = SubResource("wall_left")
+
+[node name="Right" type="CollisionShape2D" parent="Walls"]
+position = Vector2(1290, 360)
+shape = SubResource("wall_right")
+
+[node name="Instructions" type="Label" parent="."]
+offset_left = 100.0
+offset_top = 680.0
+offset_right = 1180.0
+offset_bottom = 720.0
+text = "WASD: Move | LMB: Shoot | F1: +XP | F2: -HP | F3: Debug | F4/F5/F6: Spawn Enemy | F7: Item | F8: Clear"
+horizontal_alignment = 1
