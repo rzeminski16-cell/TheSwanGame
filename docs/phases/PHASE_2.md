@@ -168,20 +168,20 @@ godot --headless --path . --scene tests/TestPhase2Runtime.tscn
 
 ### Manual Testing Checklist (Human Required)
 
-- [ ] Run TestPlayground — player and enemies visible on screen
-- [ ] Player auto-fires projectiles toward mouse cursor (left click held or auto)
-- [ ] Projectiles visually travel from player toward aim direction
-- [ ] Melee enemies (Cave Rat) chase the player
-- [ ] Ranged enemies (Spitter Crab) keep distance and fire projectiles
-- [ ] Enemy projectiles damage the player (health drops in debug overlay)
-- [ ] Player projectiles damage enemies (enemies flash/die)
-- [ ] Dead enemies drop loot pickups (colored squares on ground)
-- [ ] Walking over loot pickup adds item to inventory
-- [ ] Money pickups increase player money (shown in debug overlay)
-- [ ] XP increases when enemies die (shown in debug overlay)
-- [ ] F4 spawns a Cave Rat, F5 spawns a Spitter Crab, F6 spawns Crab King
-- [ ] F7 gives a random item (check debug overlay Items count increases)
-- [ ] F8 clears all enemies
-- [ ] Boss (Crab King) is visibly larger and purple-colored
-- [ ] Items modify player stats (give damage_ring via F7, check damage in debug overlay)
-- [ ] Enemies stay within walls
+- [x] Run TestPlayground — player and enemies visible on screen
+- [x] Player auto-fires projectiles toward mouse cursor (left click held or auto)
+- [x] Projectiles visually travel from player toward aim direction
+- [x] Melee enemies (Cave Rat) chase the player
+- [x] Ranged enemies (Spitter Crab) keep distance and fire projectiles
+- [x] Enemy projectiles damage the player (health drops in debug overlay)
+- [x] Player projectiles damage enemies (enemies flash/die)
+- [x] Dead enemies drop loot pickups (colored squares on ground)
+- [x] Walking over loot pickup adds item to inventory
+- [x] Money pickups increase player money (shown in debug overlay)
+- [x] XP increases when enemies die (shown in debug overlay)
+- [x] F4 spawns a Cave Rat, F5 spawns a Spitter Crab, F6 spawns Crab King
+- [x] F7 gives a random item (check debug overlay Items count increases)
+- [x] F8 clears all enemies
+- [x] Boss (Crab King) is visibly larger and purple-colored
+- [x] Items modify player stats (give damage_ring via F7, check damage in debug overlay)
+- [x] Enemies stay within walls

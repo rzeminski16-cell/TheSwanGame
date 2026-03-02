@@ -29,6 +29,7 @@ InventoryManager="*res://scripts/managers/inventory_manager.gd"
 CombatManager="*res://scripts/managers/combat_manager.gd"
 DungeonManager="*res://scripts/managers/dungeon_manager.gd"
 EconomyManager="*res://scripts/managers/economy_manager.gd"
+SkillManager="*res://scripts/managers/skill_manager.gd"
 TimeManager="*res://scripts/managers/time_manager.gd"
 MissionManager="*res://scripts/managers/mission_manager.gd"
 
