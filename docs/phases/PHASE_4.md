@@ -1,18 +1,18 @@
 # Phase 4: Dungeon System — Rooms, Waves, Boss, Scaling
 
-**Goal:** Full dungeon lifecycle with room-by-room progression, enemy wave spawning, boss fights, per-completion scaling, death penalty, and a combat arena scene.
+**Goal:** Full dungeon lifecycle with room-by-room progression, enemy wave spawning, boss encounters, per-completion scaling, death penalty, and scene transitions.
 
-**Depends on:** Phase 3 (SkillManager, EconomyManager, UIManager, CombatManager)
+**Depends on:** Phase 2 (CombatManager, enemies), Phase 3 (SkillManager, EconomyManager, UIManager notifications)
 
 ---
 
 ## What This Phase Delivers
 
-- Fully implemented `DungeonManager` — dungeon start/complete/fail lifecycle, room progression, scaling formulas, completion tracking, death penalty
-- `DungeonScene` — combat arena with walls, player spawning, room/dungeon UI labels, player death handling
-- `DungeonScene.tscn` — scene file for the dungeon arena
-- Updated `UIManager` — dungeon start/complete/fail notification toasts
-- Updated TestPlayground with dungeon entry debug keys (F9 = Crab Cave, 1 = Abandoned Tunnel)
+- Fully implemented `DungeonManager` — dungeon lifecycle orchestration, room progression, scaling formulas, completion tracking, death penalty, save/load
+- `DungeonScene` — enclosed combat arena with walls, player spawn, room/dungeon name UI, player death handling
+- Updated `UIManager` — dungeon notifications (started, completed, failed)
+- Updated `TestPlayground` — F9 (Crab Cave) and 1 (Abandoned Tunnel) debug keys for dungeon entry
+- Scene file `DungeonScene.tscn` — simple Node2D wrapper
 
 ---
 
@@ -21,20 +21,18 @@
 ```
 scripts/
 ├── managers/
-│   └── dungeon_manager.gd          # UPDATED — full dungeon lifecycle, scaling, death penalty
-└── dungeon_scene.gd                # NEW — combat arena with walls and room UI
+│   └── dungeon_manager.gd        # UPDATED — full dungeon lifecycle, scaling, death penalty
+├── dungeon_scene.gd              # NEW — combat arena scene logic
+├── ui_manager.gd                 # UPDATED — dungeon signal notifications
+└── test_playground.gd            # UPDATED — F9 and 1 dungeon entry keys
 
 scenes/
-└── DungeonScene.tscn               # NEW — dungeon arena scene
-
-scripts/
-├── ui_manager.gd                   # UPDATED — dungeon notification signal handlers
-└── test_playground.gd              # UPDATED — F9/1 dungeon entry keys
+└── DungeonScene.tscn             # NEW — dungeon combat arena
 
 tests/
-├── test_phase4_json.py             # Python: 93 checks — dungeon data, scaling, loot, death penalty
-├── test_phase4_runtime.gd          # GDScript: ~35 checks — DungeonManager API, scaling, save/load
-└── TestPhase4Runtime.tscn          # Scene for runtime tests
+├── test_phase4_json.py           # Python: 93 checks — dungeon data, scaling, rooms, enemies
+├── test_phase4_runtime.gd        # GDScript: ~35 checks — DungeonManager API, scaling, save/load
+└── TestPhase4Runtime.tscn        # Scene for runtime tests
 ```
 
 ---
@@ -47,30 +45,43 @@ tests/
 
 **Dungeon flow:**
 ```
-1. Player triggers dungeon entry (e.g. F9 in TestPlayground)
+1. Player triggers dungeon entry (debug key or game trigger)
 2. DungeonManager.start_dungeon(dungeon_id):
-   a. Validates dungeon exists and isn't a completed story dungeon
-   b. Stores return scene path
-   c. Calculates scaling (replayable dungeons only)
-   d. Updates GameState (is_in_dungeon, dungeon_scaling_data)
-   e. Pauses TimeManager
-   f. Loads DungeonScene via SceneManager
+   a. Loads dungeon data from DataManager
+   b. Checks story dungeon not already completed
+   c. Stores return scene path
+   d. Calculates scaling (for replayable dungeons)
+   e. Updates GameState (is_in_dungeon, dungeon_scaling_data)
+   f. Pauses TimeManager
+   g. Changes scene to DungeonScene via SceneManager
+   h. Emits dungeon_started signal
 3. DungeonScene._ready():
    a. Builds arena walls (StaticBody2D, collision layer 1)
    b. Spawns player at bottom center (640, 500), heals to full
-   c. Connects to DungeonManager signals
-   d. After 0.5s delay, calls DungeonManager.start_next_room()
-4. Room loop (DungeonManager._process):
-   a. start_next_room() spawns enemies via CombatManager
-   b. Monitors CombatManager.get_active_enemy_count() == 0
-   c. On room clear: 1.5s delay → next room or complete
-5. After last room cleared → DungeonManager.complete_dungeon():
+   c. Connects DungeonManager room/dungeon signals
+   d. Connects player death signal
+   e. After 0.5s delay, calls DungeonManager.start_next_room()
+4. DungeonManager.start_next_room():
+   a. Advances room index
+   b. If all rooms done → complete_dungeon()
+   c. Emits room_started(index, total)
+   d. Spawns enemies via CombatManager (combat or boss room)
+   e. Sets _waiting_for_clear = true
+5. DungeonManager._process():
+   a. Monitors CombatManager.get_active_enemy_count() == 0
+   b. On clear: emits room_cleared, starts 1.5s delay
+   c. After delay: start_next_room() or complete_dungeon()
+6. DungeonManager.complete_dungeon():
    a. Increments completion count
-   b. Exits to previous scene
-6. On player death → DungeonManager.fail_dungeon():
-   a. Applies death penalty (10% money + 1 random item)
-   b. Clears remaining enemies
-   c. Exits to previous scene
+   b. Resets dungeon state
+   c. Resumes TimeManager
+   d. Emits dungeon_completed
+   e. Returns to previous scene
+7. On player death:
+   a. DungeonManager.fail_dungeon()
+   b. Applies death penalty (money + item loss)
+   c. Clears all enemies
+   d. Returns to previous scene
 ```
 
 ### Dungeon Types
@@ -84,6 +95,39 @@ tests/
 
 - **combat** — Spawns enemy groups via `CombatManager.spawn_wave()`
 - **boss** — Spawns boss enemy at top center + optional adds
+
+### Dungeon Data Structure
+
+Dungeons are defined in `data/dungeons.json`:
+
+```json
+{
+    "id": "crab_cave",
+    "display_name": "Crab Cave",
+    "type": "story",
+    "replayable": false,
+    "base_difficulty": 1.0,
+    "rooms": [
+        {
+            "room_type": "combat",
+            "enemy_groups": [
+                { "enemy_id": "melee_rat", "count": 5 }
+            ]
+        },
+        {
+            "room_type": "boss",
+            "enemy_id": "crab_king",
+            "enemy_groups": []
+        }
+    ]
+}
+```
+
+- `type`: "story" (one-time) or "replayable" (scales on repeat)
+- `replayable`: Controls whether scaling applies and re-entry is allowed
+- `rooms`: Ordered array — each room is either "combat" or "boss"
+- `enemy_groups`: Array of `{enemy_id, count}` for wave spawning
+- Boss rooms use `enemy_id` for the boss and optional `enemy_groups` for adds
 
 ### Scaling Formulas
 
@@ -108,13 +152,11 @@ loot_quality_multiplier = 1.0 + count × 0.10            # uncapped
 - `difficulty_multiplier_cap`: 3.0
 
 **Example at completion 5:**
-```
-difficulty = min(1.0 + 5 × 0.15, 3.0) = 1.75
-health = 1.0 + 5 × 0.12 = 1.60
-damage = 1.0 + 5 × 0.08 = 1.40
-count = 1.0 + 5 × 0.10 = 1.50
-loot = 1.0 + 5 × 0.10 = 1.50
-```
+- Difficulty: 1.75 (capped at 3.0 max)
+- Health: 1.60 (rat 50 HP → 80 HP)
+- Damage: 1.40 (rat 8 dmg → 11.2 dmg)
+- Count: 1.50 (5 rats → 8 rats)
+- Loot quality: 1.50
 
 ### Death Penalty
 
@@ -130,27 +172,6 @@ On dungeon failure (player dies), from `global_config.json → death_penalty`:
 var money_lost = roundi(current_money * 0.10)
 EconomyManager.deduct_money(1, money_lost)
 InventoryManager.remove_random_item(1)
-```
-
-### How to Enter a Dungeon Programmatically
-
-```gdscript
-# Start a dungeon
-var success = DungeonManager.start_dungeon("crab_cave")
-
-# Check dungeon state
-DungeonManager.is_dungeon_active()         # → true/false
-DungeonManager.get_active_dungeon_id()     # → "crab_cave"
-DungeonManager.get_current_room_index()    # → 0, 1, 2...
-DungeonManager.get_total_rooms()           # → 3
-
-# Check completion
-DungeonManager.get_completion_count("abandoned_tunnel")  # → 0, 1, 2...
-DungeonManager.is_dungeon_completed("crab_cave")         # → true/false
-
-# Get scaling for a dungeon
-DungeonManager.get_scaling("abandoned_tunnel")
-# → { difficulty_multiplier: 1.15, enemy_health_multiplier: 1.12, ... }
 ```
 
 ### DungeonScene Arena Layout
@@ -190,6 +211,28 @@ signal room_cleared(room_index: int)
 
 **DungeonScene handles:** `room_started`, `room_cleared`, `dungeon_completed` — updates room counter labels.
 
+### How to Enter a Dungeon Programmatically
+
+```gdscript
+# Start a dungeon
+var success: bool = DungeonManager.start_dungeon("crab_cave")
+# Returns false if: unknown id, story dungeon already completed
+
+# Check state
+DungeonManager.is_dungeon_active()       # → true/false
+DungeonManager.get_active_dungeon_id()   # → "crab_cave"
+DungeonManager.get_current_room_index()  # → 0, 1, 2...
+DungeonManager.get_total_rooms()         # → 3
+
+# Query completions
+DungeonManager.get_completion_count("abandoned_tunnel")  # → 0, 1, 2...
+DungeonManager.is_dungeon_completed("crab_cave")         # → true/false
+
+# Get scaling for a dungeon
+DungeonManager.get_scaling("abandoned_tunnel")
+# → { difficulty_multiplier: 1.15, enemy_health_multiplier: 1.12, ... }
+```
+
 ### Save/Load
 
 ```gdscript
@@ -203,27 +246,23 @@ DungeonManager.load_save_data(data)
 
 ### How to Add a New Dungeon
 
-1. Add dungeon definition to `data/dungeons.json`:
-```json
-{
-    "id": "new_dungeon",
-    "display_name": "New Dungeon",
-    "type": "replayable",
-    "base_difficulty": 2,
-    "replayable": true,
-    "rooms": [
-        {
-            "room_type": "combat",
-            "enemy_groups": [
-                { "enemy_id": "melee_rat", "count": 4 }
-            ]
-        }
-    ]
-}
-```
-2. All enemy IDs must exist in `data/enemies.json`
-3. Boss rooms use `"room_type": "boss"` with an `"enemy_id"` field
-4. Optionally add a debug key in `test_playground.gd`
+1. Add dungeon entry to `data/dungeons.json`
+2. Add room definitions with enemy references (must exist in `enemies.json`)
+3. If boss room: add `"room_type": "boss"` and `"enemy_id": "boss_id"`
+4. Set `"type"` to "story" or "replayable" and `"replayable"` accordingly
+5. Add test cases to `test_phase4_json.py`
+
+### UIManager Dungeon Notifications
+
+UIManager connects to DungeonManager signals and shows notifications:
+
+| Signal | Notification |
+|--------|-------------|
+| `dungeon_started` | "Entering: [Dungeon Name]" |
+| `dungeon_completed` | "Dungeon Complete: [Name]!" |
+| `dungeon_failed` | "Dungeon Failed: [Name]" |
+| `room_started` (via DungeonScene) | "Room X/Y" or "BOSS FIGHT!" |
+| `room_cleared` (via DungeonScene) | "Room Cleared!" or "Dungeon Complete!" |
 
 ---
 
@@ -238,14 +277,14 @@ python3 tests/test_phase4_json.py
 ```
 
 **Tests: 93 checks.** What it covers:
-- Dungeon data integrity (required fields, correct types)
+- Dungeon data integrity (2 dungeons, all required fields)
 - Room structure validation (room types, enemy groups, boss rooms)
-- Enemy reference validation (all enemy IDs exist in enemies.json)
+- Enemy reference validation (all referenced enemies exist in enemies.json)
 - Scaling formula validation (per-completion multipliers, difficulty cap)
 - Enemy scaling math (rat/boss stats at various completion counts)
 - Loot table references (basic_dungeon_loot, boss_loot, enemy loot tables)
 - Death penalty config (money_loss_percent, item_loss_count, penalty math)
-- Demo content blueprint compliance (2 dungeons, story/replayable types)
+- Demo content blueprint compliance (1 story + 1 replayable, boss room, cap)
 
 #### 2. GDScript Runtime Tests (requires Godot)
 
@@ -255,32 +294,33 @@ godot --headless --path . --scene tests/TestPhase4Runtime.tscn
 
 **Tests: ~35 checks.** What it covers:
 - DungeonManager singleton existence and API methods
-- Scaling formula correctness at various completion counts
-- Difficulty multiplier cap at 3.0
-- Completion count tracking and persistence
-- Dungeon data loading and queries
+- Scaling formulas at completions 0, 1, 5 (exact values)
+- Scaling cap (difficulty capped at 3.0, health NOT capped)
+- Completion count tracking (load, query, unknown dungeon)
+- Dungeon data queries (crab_cave rooms, abandoned_tunnel replayable)
 - Story dungeon single-completion guard
-- Death penalty config validation
+- Death penalty config values and math
 - Save/load data round-trip
 
 ### Manual Testing Checklist (Human Required)
 
-- [ ] Run TestPlayground — F9 enters Crab Cave
-- [ ] Crab Cave: dungeon name label at top center, room counter visible
-- [ ] Room 1: 5 rats spawn in arena center area
-- [ ] Killing all rats → "Room Cleared!" → 1.5s delay → Room 2
-- [ ] Room 2: 3 rats + 2 crabs spawn
-- [ ] Room 3: boss room — "BOSS FIGHT!" notification, Crab King spawns
-- [ ] Defeating Crab King → "Dungeon Complete!" → returns to TestPlayground
-- [ ] F9 again → cannot re-enter Crab Cave (story dungeon, completed)
-- [ ] Press 1 → enters Abandoned Tunnel
-- [ ] 3 combat rooms, no boss
-- [ ] Complete → returns to TestPlayground
-- [ ] Press 1 again → can re-enter (replayable dungeon)
-- [ ] Second run: enemies should be slightly tougher (scaled)
+- [ ] F9 enters Crab Cave — scene changes to dark arena with walls
+- [ ] Dungeon name "Crab Cave" displayed at top center
+- [ ] Room counter shows "Room 1/3" then updates as rooms clear
+- [ ] Enemies spawn in Room 1 (5 rats)
+- [ ] Killing all enemies triggers "Room Cleared!" notification
+- [ ] After 1.5s delay, Room 2 starts (3 rats + 2 crabs)
+- [ ] Room 3 (boss): "BOSS FIGHT!" notification, room label turns red
+- [ ] Crab King spawns at top center
+- [ ] Defeating boss → "Dungeon Complete!" → returns to TestPlayground
+- [ ] Re-pressing F9 → "Cannot enter dungeon" (story, already completed)
+- [ ] 1 enters Abandoned Tunnel — 3 combat rooms, no boss
+- [ ] After completing Abandoned Tunnel, pressing 1 again enters it (replayable)
+- [ ] Player healed to full on dungeon entry
+- [ ] Dying in dungeon → "You died!" notification → death penalty applied
+- [ ] Death penalty: money reduced by 10%, 1 item lost (check with F10/F7 beforehand)
+- [ ] After death, returns to TestPlayground
+- [ ] F12 heals player during dungeon (for testing survivability)
+- [ ] Multiple Abandoned Tunnel completions increase scaling (enemies get tougher)
 - [ ] Walls contain player and enemies within the arena
-- [ ] Player death in dungeon → "You died! Penalty applied..." notification
-- [ ] Death penalty: money reduced by 10%, 1 random item lost
-- [ ] After death: returns to TestPlayground
-- [ ] UIManager notifications appear for dungeon start/complete/fail
 - [ ] HUD remains visible during dungeon
