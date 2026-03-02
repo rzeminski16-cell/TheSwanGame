@@ -1,12 +1,13 @@
 extends CanvasLayer
-## UIManager — Manages all UI elements: HUD, panels, popups, notifications, pause.
+## UIManager — Manages all UI elements: HUD, panels, popups, notifications, pause, debug menu.
 ## Child of Main.tscn (not an autoload).
-## Toggle screens: I = Inventory, K = Skill Tree, ESC = Pause.
+## Toggle screens: I = Inventory, K = Skill Tree, ESC = Pause, F3 = Debug Menu.
 
 const HUD_SCENE := "res://scenes/ui/HUD.tscn"
 const SKILL_TREE_SCENE := "res://scenes/ui/SkillTreePanel.tscn"
 const INVENTORY_SCENE := "res://scenes/ui/InventoryPanel.tscn"
 const PAUSE_MENU_SCENE := "res://scenes/ui/PauseMenu.tscn"
+const DEBUG_MENU_SCENE := "res://scenes/ui/DebugMenu.tscn"
 
 signal hud_toggled(visible_state: bool)
 signal screen_opened(screen_name: String)
@@ -16,7 +17,10 @@ var _hud: Control
 var _skill_tree_panel: PanelContainer
 var _inventory_panel: PanelContainer
 var _pause_menu: PanelContainer
+var _debug_menu: PanelContainer
 var _notification_container: VBoxContainer
+var _mission_tracker: VBoxContainer
+var _time_display: Label
 var _is_paused: bool = false
 
 
@@ -26,6 +30,8 @@ func _ready() -> void:
 
 	_setup_hud()
 	_setup_notification_area()
+	_setup_mission_tracker()
+	_setup_time_display()
 	_connect_signals()
 	print("UIManager: Ready.")
 
@@ -46,6 +52,29 @@ func _setup_notification_area() -> void:
 	_notification_container.add_theme_constant_override("separation", 4)
 	_notification_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_notification_container)
+
+
+func _setup_mission_tracker() -> void:
+	# Mission tracker: top-right corner
+	_mission_tracker = VBoxContainer.new()
+	_mission_tracker.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_mission_tracker.position = Vector2(-280, 10)
+	_mission_tracker.custom_minimum_size = Vector2(260, 0)
+	_mission_tracker.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_mission_tracker)
+
+
+func _setup_time_display() -> void:
+	# Time display: top-center-right
+	_time_display = Label.new()
+	_time_display.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_time_display.position = Vector2(420, 50)
+	_time_display.custom_minimum_size = Vector2(200, 0)
+	_time_display.add_theme_font_size_override("font_size", 12)
+	_time_display.add_theme_color_override("font_color", Color(0.7, 0.7, 0.8))
+	_time_display.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_time_display.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_time_display)
 
 
 func _connect_signals() -> void:
@@ -70,6 +99,16 @@ func _connect_signals() -> void:
 	DungeonManager.dungeon_completed.connect(_on_dungeon_completed)
 	DungeonManager.dungeon_failed.connect(_on_dungeon_failed)
 
+	# Connect to MissionManager for mission notifications
+	MissionManager.mission_started.connect(_on_mission_started)
+	MissionManager.mission_completed.connect(_on_mission_completed)
+	MissionManager.objective_completed.connect(_on_objective_completed)
+
+
+func _process(_delta: float) -> void:
+	_update_mission_tracker()
+	_update_time_display()
+
 
 func _input(event: InputEvent) -> void:
 	if not (event is InputEventKey and event.pressed):
@@ -83,6 +122,9 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("pause"):
 		_toggle_pause()
+		get_viewport().set_input_as_handled()
+	elif event.keycode == KEY_F3:
+		toggle_debug_menu()
 		get_viewport().set_input_as_handled()
 
 
@@ -169,10 +211,40 @@ func _close_skill_tree() -> void:
 		screen_closed.emit("skill_tree")
 
 
+# --- Debug Menu ---
+
+func toggle_debug_menu() -> void:
+	if _debug_menu and _debug_menu.visible:
+		_close_debug_menu()
+	else:
+		_open_debug_menu()
+
+
+func _open_debug_menu() -> void:
+	if _debug_menu == null:
+		var packed := load(DEBUG_MENU_SCENE) as PackedScene
+		if packed == null:
+			return
+		_debug_menu = packed.instantiate()
+		_debug_menu.closed.connect(_close_debug_menu)
+		add_child(_debug_menu)
+	_debug_menu.visible = true
+	screen_opened.emit("debug_menu")
+
+
+func _close_debug_menu() -> void:
+	if _debug_menu:
+		_debug_menu.visible = false
+		screen_closed.emit("debug_menu")
+
+
 # --- Pause Menu ---
 
 func _toggle_pause() -> void:
 	# If a panel is open, close it instead of pausing
+	if _debug_menu and _debug_menu.visible:
+		_close_debug_menu()
+		return
 	if _skill_tree_panel and _skill_tree_panel.visible:
 		_close_skill_tree()
 		return
@@ -210,6 +282,69 @@ func _unpause() -> void:
 	if _pause_menu:
 		_pause_menu.visible = false
 	screen_closed.emit("pause")
+
+
+# --- Mission Tracker ---
+
+func _update_mission_tracker() -> void:
+	if _mission_tracker == null:
+		return
+
+	# Clear old children
+	for child in _mission_tracker.get_children():
+		child.queue_free()
+
+	var active_id := MissionManager.get_active_mission_id()
+	if active_id == "":
+		return
+
+	var data: Dictionary = MissionManager.get_active_mission_data()
+	if data.is_empty():
+		return
+
+	# Mission name
+	var title := Label.new()
+	title.text = data.get("display_name", active_id)
+	title.add_theme_font_size_override("font_size", 14)
+	title.add_theme_color_override("font_color", Color(1.0, 0.9, 0.5))
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_mission_tracker.add_child(title)
+
+	# Objectives
+	var objectives: Array = data.get("objectives", [])
+	var status: Array = MissionManager.get_objective_status(active_id)
+
+	for i in range(objectives.size()):
+		var obj: Dictionary = objectives[i]
+		var done: bool = status[i] if i < status.size() else false
+
+		var obj_label := Label.new()
+		var desc := MissionManager._describe_objective(obj)
+		if done:
+			obj_label.text = "[x] %s" % desc
+			obj_label.add_theme_color_override("font_color", Color(0.4, 0.7, 0.4))
+		else:
+			obj_label.text = "[ ] %s" % desc
+			obj_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+		obj_label.add_theme_font_size_override("font_size", 11)
+		obj_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		obj_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_mission_tracker.add_child(obj_label)
+
+
+# --- Time Display ---
+
+func _update_time_display() -> void:
+	if _time_display == null:
+		return
+	_time_display.text = TimeManager.get_time_string()
+
+	# Color based on time of day
+	if TimeManager.is_night():
+		_time_display.add_theme_color_override("font_color", Color(0.4, 0.4, 0.7))
+	else:
+		_time_display.add_theme_color_override("font_color", Color(0.8, 0.8, 0.6))
 
 
 # --- Notifications ---
@@ -257,8 +392,8 @@ func _on_player_leveled_up(_player_id: int, new_level: int) -> void:
 
 func _on_item_added(_player_id: int, item_id: String) -> void:
 	var item_data: Dictionary = DataManager.get_item(item_id)
-	var name: String = item_data.get("display_name", item_id)
-	show_notification("Picked up: %s" % name)
+	var item_name: String = item_data.get("display_name", item_id)
+	show_notification("Picked up: %s" % item_name)
 
 
 func _on_skill_unlocked(_player_id: int, skill_id: String) -> void:
@@ -291,3 +426,17 @@ func _on_dungeon_failed(dungeon_id: String) -> void:
 	var dungeon_data: Dictionary = DataManager.get_dungeon(dungeon_id)
 	var dungeon_name: String = dungeon_data.get("display_name", dungeon_id)
 	show_notification("Dungeon Failed: %s" % dungeon_name, 3.0)
+
+
+func _on_mission_started(mission_id: String) -> void:
+	var data: Dictionary = DataManager.get_mission(mission_id)
+	show_notification("Mission: %s" % data.get("display_name", mission_id), 3.0)
+
+
+func _on_mission_completed(mission_id: String) -> void:
+	var data: Dictionary = DataManager.get_mission(mission_id)
+	show_notification("Mission Complete: %s" % data.get("display_name", mission_id), 3.0)
+
+
+func _on_objective_completed(mission_id: String, _objective_index: int) -> void:
+	show_notification("Objective completed!", 1.5)
