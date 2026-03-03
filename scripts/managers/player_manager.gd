@@ -65,7 +65,7 @@ func _init_player_data(player_id: int) -> void:
 
 func get_player_node(player_id: int) -> Node:
 	var node = _player_nodes.get(player_id)
-	if node and not is_instance_valid(node):
+	if not is_instance_valid(node):
 		_player_nodes.erase(player_id)
 		return null
 	return node
