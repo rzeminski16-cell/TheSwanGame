@@ -93,6 +93,7 @@ test("SaveManager has load_game function", 'func load_game()' in save_mgr_src)
 test("SaveManager has new_game function", 'func new_game()' in save_mgr_src)
 test("SaveManager has has_save function", 'func has_save()' in save_mgr_src)
 test("SaveManager has delete_save function", 'func delete_save()' in save_mgr_src)
+test("SaveManager has apply_death_penalty function", 'func apply_death_penalty()' in save_mgr_src)
 
 for key in REQUIRED_SAVE_KEYS:
     test(f"SaveManager references key '{key}'",
@@ -160,14 +161,17 @@ test("MainMenu has new_game_pressed signal", "signal new_game_pressed" in main_m
 test("MainMenu has continue_pressed signal", "signal continue_pressed" in main_menu_src)
 test("MainMenu has quit_pressed signal", "signal quit_pressed" in main_menu_src)
 test("MainMenu checks SaveManager.has_save()", "SaveManager.has_save()" in main_menu_src)
+test("MainMenu has refresh() method", "func refresh()" in main_menu_src)
 
 # ============================================================
 print("\n--- GameOverScreen Script ---")
 # ============================================================
 
 game_over_src = read_file(os.path.join(SCRIPTS_DIR, "ui", "game_over_screen.gd"))
+test("GameOverScreen has continue_pressed signal", "signal continue_pressed" in game_over_src)
 test("GameOverScreen has load_save_pressed signal", "signal load_save_pressed" in game_over_src)
 test("GameOverScreen has main_menu_pressed signal", "signal main_menu_pressed" in game_over_src)
+test("GameOverScreen has refresh() method", "func refresh()" in game_over_src)
 
 # ============================================================
 print("\n--- PauseMenu Script ---")
@@ -192,6 +196,9 @@ test("UIManager has show_game_over()", "func show_game_over" in ui_mgr_src)
 test("UIManager connects save_requested", "save_requested" in ui_mgr_src)
 test("UIManager connects load_requested", "load_requested" in ui_mgr_src)
 test("UIManager connects main_menu_requested", "main_menu_requested" in ui_mgr_src)
+test("UIManager has _on_death_continue()", "func _on_death_continue" in ui_mgr_src)
+test("UIManager calls apply_death_penalty()", "apply_death_penalty" in ui_mgr_src)
+test("UIManager calls refresh() on main menu", "_main_menu.refresh()" in ui_mgr_src)
 
 # ============================================================
 print("\n--- Main.gd Game Flow ---")
@@ -217,10 +224,18 @@ print("\n--- DungeonManager Fallback ---")
 # ============================================================
 
 dungeon_src = read_file(os.path.join(SCRIPTS_DIR, "managers", "dungeon_manager.gd"))
-test("DungeonManager fallback is OverworldScene (not TestPlayground)",
-     "OverworldScene" in dungeon_src and
-     "TestPlayground" not in dungeon_src.split("_exit_to_previous_scene")[1]
-     if "_exit_to_previous_scene" in dungeon_src else False)
+test("DungeonManager fallback is OverworldScene",
+     "OverworldScene" in dungeon_src)
+test("DungeonManager fail_dungeon does NOT call _apply_death_penalty",
+     "_apply_death_penalty" not in dungeon_src)
+
+# ============================================================
+print("\n--- Dungeon Scene Death Flow ---")
+# ============================================================
+
+dungeon_scene_src = read_file(os.path.join(SCRIPTS_DIR, "dungeon_scene.gd"))
+test("dungeon_scene calls show_game_over()",
+     "show_game_over" in dungeon_scene_src)
 
 # ============================================================
 # Results

@@ -136,6 +136,7 @@ func show_main_menu() -> void:
 		_main_menu.quit_pressed.connect(_on_quit)
 		add_child(_main_menu)
 
+	_main_menu.refresh()
 	_main_menu.visible = true
 	screen_opened.emit("main_menu")
 
@@ -170,25 +171,43 @@ func show_game_over() -> void:
 		if packed == null:
 			return
 		_game_over_screen = packed.instantiate()
-		_game_over_screen.load_save_pressed.connect(_on_game_over_load)
-		_game_over_screen.main_menu_pressed.connect(_on_game_over_menu)
+		_game_over_screen.continue_pressed.connect(_on_death_continue)
+		_game_over_screen.load_save_pressed.connect(_on_death_load)
+		_game_over_screen.main_menu_pressed.connect(_on_death_menu)
 		add_child(_game_over_screen)
 
+	_game_over_screen.refresh()
 	_game_over_screen.visible = true
+	get_tree().paused = true
 	screen_opened.emit("game_over")
 
 
-func _on_game_over_load() -> void:
+func _hide_game_over() -> void:
 	if _game_over_screen:
 		_game_over_screen.visible = false
+	get_tree().paused = false
 	screen_closed.emit("game_over")
+
+
+func _on_death_continue() -> void:
+	## Continue: apply death penalty, return to overworld.
+	_hide_game_over()
+	SaveManager.apply_death_penalty()
+	var scene_manager = get_node_or_null("/root/Main/SceneManager")
+	if scene_manager:
+		scene_manager.change_scene("res://scenes/OverworldScene.tscn")
+	show_notification("Death penalty applied.", 3.0)
+
+
+func _on_death_load() -> void:
+	## Load most recent save (no penalty).
+	_hide_game_over()
 	SaveManager.load_game()
 
 
-func _on_game_over_menu() -> void:
-	if _game_over_screen:
-		_game_over_screen.visible = false
-	screen_closed.emit("game_over")
+func _on_death_menu() -> void:
+	## Return to main menu (no penalty).
+	_hide_game_over()
 	_go_to_main_menu()
 
 
@@ -373,10 +392,6 @@ func _on_pause_main_menu() -> void:
 
 
 func _go_to_main_menu() -> void:
-	# Clear the current scene and show main menu
-	var scene_manager = get_node_or_null("/root/Main/SceneManager")
-	if scene_manager:
-		scene_manager.change_scene("res://scenes/ui/MainMenu.tscn")
 	show_main_menu()
 
 

@@ -63,7 +63,6 @@ func _build_ui() -> void:
 	_continue_btn.text = "Continue"
 	_continue_btn.custom_minimum_size = Vector2(250, 45)
 	_continue_btn.pressed.connect(func(): continue_pressed.emit())
-	_continue_btn.disabled = not SaveManager.has_save()
 	vbox.add_child(_continue_btn)
 
 	# Quit button
@@ -72,3 +71,15 @@ func _build_ui() -> void:
 	quit_btn.custom_minimum_size = Vector2(250, 45)
 	quit_btn.pressed.connect(func(): quit_pressed.emit())
 	vbox.add_child(quit_btn)
+
+	_refresh_buttons()
+
+
+func refresh() -> void:
+	## Called by UIManager each time the menu is shown to update button states.
+	_refresh_buttons()
+
+
+func _refresh_buttons() -> void:
+	if _continue_btn:
+		_continue_btn.disabled = not SaveManager.has_save()

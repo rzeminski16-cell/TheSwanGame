@@ -164,10 +164,10 @@ func _on_dungeon_completed(_dungeon_id: String) -> void:
 
 
 func _on_player_died() -> void:
-	# Brief delay then fail
-	var ui = get_node_or_null("/root/Main/UIManager")
-	if ui and ui.has_method("show_notification"):
-		ui.show_notification("You died! Penalty applied...", 3.0)
-
-	await get_tree().create_timer(1.5).timeout
+	# Clean up dungeon state, then show death screen
+	await get_tree().create_timer(1.0).timeout
 	DungeonManager.fail_dungeon()
+
+	var ui = get_node_or_null("/root/Main/UIManager")
+	if ui and ui.has_method("show_game_over"):
+		ui.show_game_over()

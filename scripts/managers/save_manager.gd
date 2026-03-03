@@ -129,6 +129,26 @@ func new_game() -> void:
 	print("SaveManager: New game started")
 
 
+func apply_death_penalty() -> void:
+	## Apply death penalty: lose money and items per global_config settings.
+	var config: Dictionary = DataManager.get_config()
+	var penalty: Dictionary = config.get("death_penalty", {})
+
+	var money_loss_pct: float = float(penalty.get("money_loss_percent", 0.10))
+	var item_loss_count: int = int(penalty.get("item_loss_count", 1))
+
+	var current_money: int = EconomyManager.get_money(1)
+	var money_lost: int = roundi(float(current_money) * money_loss_pct)
+	if money_lost > 0:
+		EconomyManager.deduct_money(1, money_lost)
+		print("SaveManager: Death penalty — lost %d money" % money_lost)
+
+	for i in range(item_loss_count):
+		var lost_item := InventoryManager.remove_random_item(1)
+		if lost_item != "":
+			print("SaveManager: Death penalty — lost item '%s'" % lost_item)
+
+
 func has_save() -> bool:
 	return FileAccess.file_exists(SAVE_PATH)
 

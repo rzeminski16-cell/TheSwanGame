@@ -108,13 +108,12 @@ func complete_dungeon() -> void:
 
 
 func fail_dungeon() -> void:
+	## Clean up dungeon state. Does NOT apply death penalty or change scene —
+	## that is handled by the GameOverScreen via UIManager.
 	if not _dungeon_active:
 		return
 
 	var dungeon_id := _active_dungeon_id
-
-	# Apply death penalty
-	_apply_death_penalty()
 
 	_dungeon_active = false
 	_waiting_for_clear = false
@@ -126,9 +125,7 @@ func fail_dungeon() -> void:
 	CombatManager.clear_all_enemies()
 
 	dungeon_failed.emit(dungeon_id)
-	print("DungeonManager: Dungeon '%s' failed (death penalty applied)" % _active_dungeon_data.get("display_name", dungeon_id))
-
-	_exit_to_previous_scene()
+	print("DungeonManager: Dungeon '%s' failed" % _active_dungeon_data.get("display_name", dungeon_id))
 
 
 func _exit_to_previous_scene() -> void:
@@ -136,27 +133,6 @@ func _exit_to_previous_scene() -> void:
 	var scene_manager = get_node_or_null("/root/Main/SceneManager")
 	if scene_manager:
 		scene_manager.change_scene(target)
-
-
-func _apply_death_penalty() -> void:
-	var config: Dictionary = DataManager.get_config()
-	var penalty: Dictionary = config.get("death_penalty", {})
-
-	var money_loss_pct: float = float(penalty.get("money_loss_percent", 0.10))
-	var item_loss_count: int = int(penalty.get("item_loss_count", 1))
-
-	# Lose money
-	var current_money: int = EconomyManager.get_money(1)
-	var money_lost: int = roundi(float(current_money) * money_loss_pct)
-	if money_lost > 0:
-		EconomyManager.deduct_money(1, money_lost)
-		print("DungeonManager: Death penalty — lost %d money" % money_lost)
-
-	# Lose random items
-	for i in range(item_loss_count):
-		var lost_item := InventoryManager.remove_random_item(1)
-		if lost_item != "":
-			print("DungeonManager: Death penalty — lost item '%s'" % lost_item)
 
 
 # --- Room Progression ---

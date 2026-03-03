@@ -25,6 +25,7 @@ func _ready() -> void:
 	_test_load_game_restores_state()
 	_test_new_game_resets_state()
 	_test_has_save_and_delete_save()
+	_test_apply_death_penalty()
 
 	_print_results()
 
@@ -71,6 +72,7 @@ func _test_save_manager_exists() -> void:
 	_check("SaveManager has new_game()", SaveManager.has_method("new_game"))
 	_check("SaveManager has has_save()", SaveManager.has_method("has_save"))
 	_check("SaveManager has delete_save()", SaveManager.has_method("delete_save"))
+	_check("SaveManager has apply_death_penalty()", SaveManager.has_method("apply_death_penalty"))
 
 
 func _test_player_manager_save_load() -> void:
@@ -331,3 +333,43 @@ func _test_has_save_and_delete_save() -> void:
 
 	SaveManager.delete_save()
 	_check("has_save() is false after delete", not SaveManager.has_save())
+
+
+func _test_apply_death_penalty() -> void:
+	_section("apply_death_penalty()")
+
+	EconomyManager.load_save_data(1, 1000)
+	InventoryManager.load_save_data(1, [])
+
+	# Add an item to test item loss
+	var all_items: Array = DataManager.get_all_items()
+	if not all_items.is_empty():
+		InventoryManager.add_item(1, all_items[0].get("id", ""))
+
+	var money_before := EconomyManager.get_money(1)
+	var inv_before := InventoryManager.get_inventory(1).size()
+
+	SaveManager.apply_death_penalty()
+
+	var money_after := EconomyManager.get_money(1)
+	_check("Death penalty reduces money",
+		money_after < money_before,
+		"before=%d after=%d" % [money_before, money_after])
+
+	# Expected: 10% loss of 1000 = 100 lost
+	var config: Dictionary = DataManager.get_config()
+	var pct: float = float(config.get("death_penalty", {}).get("money_loss_percent", 0.1))
+	var expected_loss := roundi(float(money_before) * pct)
+	_check("Money loss matches config",
+		money_before - money_after == expected_loss,
+		"lost %d, expected %d" % [money_before - money_after, expected_loss])
+
+	if not all_items.is_empty():
+		var inv_after := InventoryManager.get_inventory(1).size()
+		_check("Death penalty removes item",
+			inv_after < inv_before,
+			"before=%d after=%d" % [inv_before, inv_after])
+
+	# Clean up
+	EconomyManager.load_save_data(1, 0)
+	InventoryManager.load_save_data(1, [])
