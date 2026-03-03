@@ -1,12 +1,15 @@
 extends CanvasLayer
-## UIManager — Manages all UI elements: HUD, panels, popups, notifications, pause.
+## UIManager — Manages all UI elements: HUD, panels, popups, notifications, pause, debug menu.
 ## Child of Main.tscn (not an autoload).
-## Toggle screens: I = Inventory, K = Skill Tree, ESC = Pause.
+## Toggle screens: I = Inventory, K = Skill Tree, ESC = Pause, F3 = Debug Menu.
 
 const HUD_SCENE := "res://scenes/ui/HUD.tscn"
 const SKILL_TREE_SCENE := "res://scenes/ui/SkillTreePanel.tscn"
 const INVENTORY_SCENE := "res://scenes/ui/InventoryPanel.tscn"
 const PAUSE_MENU_SCENE := "res://scenes/ui/PauseMenu.tscn"
+const DEBUG_MENU_SCENE := "res://scenes/ui/DebugMenu.tscn"
+const MAIN_MENU_SCENE := "res://scenes/ui/MainMenu.tscn"
+const GAME_OVER_SCENE := "res://scenes/ui/GameOverScreen.tscn"
 
 signal hud_toggled(visible_state: bool)
 signal screen_opened(screen_name: String)
@@ -16,8 +19,14 @@ var _hud: Control
 var _skill_tree_panel: PanelContainer
 var _inventory_panel: PanelContainer
 var _pause_menu: PanelContainer
+var _debug_menu: PanelContainer
+var _main_menu: PanelContainer
+var _game_over_screen: PanelContainer
 var _notification_container: VBoxContainer
+var _mission_tracker: VBoxContainer
+var _time_display: Label
 var _is_paused: bool = false
+var _in_main_menu: bool = false
 
 
 func _ready() -> void:
@@ -26,6 +35,8 @@ func _ready() -> void:
 
 	_setup_hud()
 	_setup_notification_area()
+	_setup_mission_tracker()
+	_setup_time_display()
 	_connect_signals()
 	print("UIManager: Ready.")
 
@@ -48,6 +59,29 @@ func _setup_notification_area() -> void:
 	add_child(_notification_container)
 
 
+func _setup_mission_tracker() -> void:
+	# Mission tracker: top-right corner
+	_mission_tracker = VBoxContainer.new()
+	_mission_tracker.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_mission_tracker.position = Vector2(-280, 10)
+	_mission_tracker.custom_minimum_size = Vector2(260, 0)
+	_mission_tracker.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_mission_tracker)
+
+
+func _setup_time_display() -> void:
+	# Time display: top-center-right
+	_time_display = Label.new()
+	_time_display.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_time_display.position = Vector2(420, 50)
+	_time_display.custom_minimum_size = Vector2(200, 0)
+	_time_display.add_theme_font_size_override("font_size", 12)
+	_time_display.add_theme_color_override("font_color", Color(0.7, 0.7, 0.8))
+	_time_display.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_time_display.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_time_display)
+
+
 func _connect_signals() -> void:
 	# Connect to CombatManager for damage popups
 	CombatManager.damage_dealt.connect(_on_damage_dealt)
@@ -65,20 +99,161 @@ func _connect_signals() -> void:
 	EconomyManager.rent_paid.connect(_on_rent_paid)
 	EconomyManager.rent_failed.connect(_on_rent_failed)
 
+	# Connect to DungeonManager for dungeon notifications
+	DungeonManager.dungeon_started.connect(_on_dungeon_started)
+	DungeonManager.dungeon_completed.connect(_on_dungeon_completed)
+	DungeonManager.dungeon_failed.connect(_on_dungeon_failed)
 
-func _input(event: InputEvent) -> void:
-	if not (event is InputEventKey and event.pressed):
-		return
+	# Connect to MissionManager for mission notifications
+	MissionManager.mission_started.connect(_on_mission_started)
+	MissionManager.mission_completed.connect(_on_mission_completed)
+	MissionManager.objective_completed.connect(_on_objective_completed)
 
-	if event.is_action_pressed("toggle_inventory"):
-		toggle_inventory()
-		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("toggle_skill_tree"):
-		toggle_skill_tree()
-		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("pause"):
-		_toggle_pause()
-		get_viewport().set_input_as_handled()
+	# Connect to SaveManager for save/load notifications
+	SaveManager.game_saved.connect(func(): show_notification("Game saved!", 2.0))
+	SaveManager.game_loaded.connect(func(): show_notification("Game loaded!", 2.0))
+
+
+func _process(_delta: float) -> void:
+	if not _in_main_menu:
+		_update_mission_tracker()
+		_update_time_display()
+
+
+# --- Main Menu ---
+
+func show_main_menu() -> void:
+	_in_main_menu = true
+	hide_hud()
+
+	if _main_menu == null:
+		var packed := load(MAIN_MENU_SCENE) as PackedScene
+		if packed == null:
+			return
+		_main_menu = packed.instantiate()
+		_main_menu.new_game_pressed.connect(_on_new_game)
+		_main_menu.continue_pressed.connect(_on_continue)
+		_main_menu.host_game_pressed.connect(_on_host_game)
+		_main_menu.join_game_pressed.connect(_on_join_game)
+		_main_menu.quit_pressed.connect(_on_quit)
+		add_child(_main_menu)
+
+	_main_menu.refresh()
+	_main_menu.visible = true
+	screen_opened.emit("main_menu")
+
+
+func hide_main_menu() -> void:
+	_in_main_menu = false
+	if _main_menu:
+		_main_menu.visible = false
+	show_hud()
+	screen_closed.emit("main_menu")
+
+
+func _on_new_game() -> void:
+	hide_main_menu()
+	SaveManager.new_game()
+
+
+func _on_continue() -> void:
+	hide_main_menu()
+	SaveManager.load_game()
+
+
+func _on_quit() -> void:
+	get_tree().quit()
+
+
+func _on_host_game() -> void:
+	_main_menu.set_status("Starting server...")
+	var success := MultiplayerManager.host_game()
+	if success:
+		_main_menu.set_status("Hosting! Waiting for players...")
+		MultiplayerManager.connection_succeeded.connect(_on_mp_ready, CONNECT_ONE_SHOT)
+		# Host can start immediately — wait a moment for others to join
+		# For now, start after a short delay or when players connect
+		_start_multiplayer_game()
+	else:
+		_main_menu.set_status("Failed to host game")
+
+
+func _on_join_game(address: String) -> void:
+	_main_menu.set_status("Connecting to %s..." % address)
+	var success := MultiplayerManager.join_game(address)
+	if success:
+		MultiplayerManager.connection_succeeded.connect(_on_mp_connected, CONNECT_ONE_SHOT)
+		MultiplayerManager.connection_failed.connect(_on_mp_connect_failed, CONNECT_ONE_SHOT)
+	else:
+		_main_menu.set_status("Failed to connect")
+
+
+func _on_mp_connected() -> void:
+	_main_menu.set_status("Connected! Starting game...")
+	# Wait a moment for assignment sync
+	await get_tree().create_timer(0.5).timeout
+	_start_multiplayer_game()
+
+
+func _on_mp_connect_failed() -> void:
+	_main_menu.set_status("Connection failed!")
+
+
+func _on_mp_ready() -> void:
+	pass  # Host already started
+
+
+func _start_multiplayer_game() -> void:
+	hide_main_menu()
+	SaveManager.new_game()
+
+
+# --- Game Over Screen ---
+
+func show_game_over() -> void:
+	if _game_over_screen == null:
+		var packed := load(GAME_OVER_SCENE) as PackedScene
+		if packed == null:
+			return
+		_game_over_screen = packed.instantiate()
+		_game_over_screen.continue_pressed.connect(_on_death_continue)
+		_game_over_screen.load_save_pressed.connect(_on_death_load)
+		_game_over_screen.main_menu_pressed.connect(_on_death_menu)
+		add_child(_game_over_screen)
+
+	_game_over_screen.refresh()
+	_game_over_screen.visible = true
+	get_tree().paused = true
+	screen_opened.emit("game_over")
+
+
+func _hide_game_over() -> void:
+	if _game_over_screen:
+		_game_over_screen.visible = false
+	get_tree().paused = false
+	screen_closed.emit("game_over")
+
+
+func _on_death_continue() -> void:
+	## Continue: apply death penalty, return to overworld.
+	_hide_game_over()
+	SaveManager.apply_death_penalty()
+	var scene_manager = get_node_or_null("/root/Main/SceneManager")
+	if scene_manager:
+		scene_manager.change_scene("res://scenes/OverworldScene.tscn")
+	show_notification("Death penalty applied.", 3.0)
+
+
+func _on_death_load() -> void:
+	## Load most recent save (no penalty).
+	_hide_game_over()
+	SaveManager.load_game()
+
+
+func _on_death_menu() -> void:
+	## Return to main menu (no penalty).
+	_hide_game_over()
+	_go_to_main_menu()
 
 
 # --- HUD ---
@@ -98,7 +273,7 @@ func hide_hud() -> void:
 # --- Inventory Panel ---
 
 func toggle_inventory() -> void:
-	if _is_paused:
+	if _is_paused or _in_main_menu:
 		return
 
 	# Close skill tree if open
@@ -132,7 +307,7 @@ func _close_inventory() -> void:
 # --- Skill Tree Panel ---
 
 func toggle_skill_tree() -> void:
-	if _is_paused:
+	if _is_paused or _in_main_menu:
 		return
 
 	# Close inventory if open
@@ -164,10 +339,43 @@ func _close_skill_tree() -> void:
 		screen_closed.emit("skill_tree")
 
 
+# --- Debug Menu ---
+
+func toggle_debug_menu() -> void:
+	if _debug_menu and _debug_menu.visible:
+		_close_debug_menu()
+	else:
+		_open_debug_menu()
+
+
+func _open_debug_menu() -> void:
+	if _debug_menu == null:
+		var packed := load(DEBUG_MENU_SCENE) as PackedScene
+		if packed == null:
+			return
+		_debug_menu = packed.instantiate()
+		_debug_menu.closed.connect(_close_debug_menu)
+		add_child(_debug_menu)
+	_debug_menu.visible = true
+	screen_opened.emit("debug_menu")
+
+
+func _close_debug_menu() -> void:
+	if _debug_menu:
+		_debug_menu.visible = false
+		screen_closed.emit("debug_menu")
+
+
 # --- Pause Menu ---
 
 func _toggle_pause() -> void:
+	if _in_main_menu:
+		return
+
 	# If a panel is open, close it instead of pausing
+	if _debug_menu and _debug_menu.visible:
+		_close_debug_menu()
+		return
 	if _skill_tree_panel and _skill_tree_panel.visible:
 		_close_skill_tree()
 		return
@@ -192,7 +400,12 @@ func _pause() -> void:
 			return
 		_pause_menu = packed.instantiate()
 		_pause_menu.resumed.connect(_unpause)
+		_pause_menu.save_requested.connect(_on_pause_save)
+		_pause_menu.load_requested.connect(_on_pause_load)
+		_pause_menu.main_menu_requested.connect(_on_pause_main_menu)
 		add_child(_pause_menu)
+
+	_pause_menu.update_button_states()
 	_pause_menu.visible = true
 	screen_opened.emit("pause")
 
@@ -205,6 +418,90 @@ func _unpause() -> void:
 	if _pause_menu:
 		_pause_menu.visible = false
 	screen_closed.emit("pause")
+
+
+func _on_pause_save() -> void:
+	var success := SaveManager.save_game()
+	if success:
+		_pause_menu.update_button_states()
+
+
+func _on_pause_load() -> void:
+	_unpause()
+	SaveManager.load_game()
+
+
+func _on_pause_main_menu() -> void:
+	_unpause()
+	_go_to_main_menu()
+
+
+func _go_to_main_menu() -> void:
+	MultiplayerManager.disconnect_game()
+	show_main_menu()
+
+
+# --- Mission Tracker ---
+
+func _update_mission_tracker() -> void:
+	if _mission_tracker == null:
+		return
+
+	# Clear old children
+	for child in _mission_tracker.get_children():
+		child.queue_free()
+
+	var active_id := MissionManager.get_active_mission_id()
+	if active_id == "":
+		return
+
+	var data: Dictionary = MissionManager.get_active_mission_data()
+	if data.is_empty():
+		return
+
+	# Mission name
+	var title := Label.new()
+	title.text = data.get("display_name", active_id)
+	title.add_theme_font_size_override("font_size", 14)
+	title.add_theme_color_override("font_color", Color(1.0, 0.9, 0.5))
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_mission_tracker.add_child(title)
+
+	# Objectives
+	var objectives: Array = data.get("objectives", [])
+	var status: Array = MissionManager.get_objective_status(active_id)
+
+	for i in range(objectives.size()):
+		var obj: Dictionary = objectives[i]
+		var done: bool = status[i] if i < status.size() else false
+
+		var obj_label := Label.new()
+		var desc := MissionManager._describe_objective(obj)
+		if done:
+			obj_label.text = "[x] %s" % desc
+			obj_label.add_theme_color_override("font_color", Color(0.4, 0.7, 0.4))
+		else:
+			obj_label.text = "[ ] %s" % desc
+			obj_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+		obj_label.add_theme_font_size_override("font_size", 11)
+		obj_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		obj_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_mission_tracker.add_child(obj_label)
+
+
+# --- Time Display ---
+
+func _update_time_display() -> void:
+	if _time_display == null:
+		return
+	_time_display.text = TimeManager.get_time_string()
+
+	# Color based on time of day
+	if TimeManager.is_night():
+		_time_display.add_theme_color_override("font_color", Color(0.4, 0.4, 0.7))
+	else:
+		_time_display.add_theme_color_override("font_color", Color(0.8, 0.8, 0.6))
 
 
 # --- Notifications ---
@@ -252,8 +549,8 @@ func _on_player_leveled_up(_player_id: int, new_level: int) -> void:
 
 func _on_item_added(_player_id: int, item_id: String) -> void:
 	var item_data: Dictionary = DataManager.get_item(item_id)
-	var name: String = item_data.get("display_name", item_id)
-	show_notification("Picked up: %s" % name)
+	var item_name: String = item_data.get("display_name", item_id)
+	show_notification("Picked up: %s" % item_name)
 
 
 func _on_skill_unlocked(_player_id: int, skill_id: String) -> void:
@@ -268,3 +565,35 @@ func _on_rent_paid(_player_id: int, amount: int) -> void:
 
 func _on_rent_failed(_player_id: int, amount: int) -> void:
 	show_notification("Cannot afford rent! Need $%d" % amount, 4.0)
+
+
+func _on_dungeon_started(dungeon_id: String) -> void:
+	var dungeon_data: Dictionary = DataManager.get_dungeon(dungeon_id)
+	var dungeon_name: String = dungeon_data.get("display_name", dungeon_id)
+	show_notification("Entering: %s" % dungeon_name, 2.5)
+
+
+func _on_dungeon_completed(dungeon_id: String) -> void:
+	var dungeon_data: Dictionary = DataManager.get_dungeon(dungeon_id)
+	var dungeon_name: String = dungeon_data.get("display_name", dungeon_id)
+	show_notification("Dungeon Complete: %s" % dungeon_name, 3.0)
+
+
+func _on_dungeon_failed(dungeon_id: String) -> void:
+	var dungeon_data: Dictionary = DataManager.get_dungeon(dungeon_id)
+	var dungeon_name: String = dungeon_data.get("display_name", dungeon_id)
+	show_notification("Dungeon Failed: %s" % dungeon_name, 3.0)
+
+
+func _on_mission_started(mission_id: String) -> void:
+	var data: Dictionary = DataManager.get_mission(mission_id)
+	show_notification("Mission: %s" % data.get("display_name", mission_id), 3.0)
+
+
+func _on_mission_completed(mission_id: String) -> void:
+	var data: Dictionary = DataManager.get_mission(mission_id)
+	show_notification("Mission Complete: %s" % data.get("display_name", mission_id), 3.0)
+
+
+func _on_objective_completed(mission_id: String, _objective_index: int) -> void:
+	show_notification("Objective completed!", 1.5)

@@ -1,6 +1,6 @@
 extends CanvasLayer
 ## DebugOverlay — Real-time stat display for development.
-## Toggle with F3.
+## Toggle with F4.
 
 @onready var label: Label = $Panel/Label
 
@@ -13,7 +13,7 @@ func _ready() -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and event.keycode == KEY_F3:
+	if event.is_action_pressed("toggle_debug_overlay"):
 		_visible = !_visible
 		visible = _visible
 
@@ -46,7 +46,7 @@ func _process(_delta: float) -> void:
 	var st_cur := stamina_comp.current_stamina if stamina_comp else 0.0
 	var st_max := stamina_comp.max_stamina if stamina_comp else 0.0
 
-	label.text = "=== DEBUG (F3) ===\n"
+	label.text = "=== DEBUG (F4) ===\n"
 	label.text += "Level: %d  |  XP: %d / %s  |  SP: %d\n" % [level, xp, xp_needed, sp]
 	label.text += "Health: %.0f / %.0f\n" % [hp_cur, hp_max]
 	label.text += "Stamina: %.0f / %.0f\n" % [st_cur, st_max]

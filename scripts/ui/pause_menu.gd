@@ -1,13 +1,22 @@
 extends PanelContainer
-## PauseMenu — Simple pause screen with resume button.
+## PauseMenu — Pause screen with Resume, Save, Load, Main Menu buttons.
 ## Toggled with ESC. Pauses the game tree.
 
 signal resumed()
+signal save_requested()
+signal load_requested()
+signal main_menu_requested()
+
+var _save_btn: Button
+var _load_btn: Button
 
 
 func _ready() -> void:
-	custom_minimum_size = Vector2(300, 200)
-	set_anchors_preset(Control.PRESET_CENTER)
+	custom_minimum_size = Vector2(300, 340)
+	size = Vector2(300, 340)
+	var vp_size := get_viewport_rect().size
+	position = Vector2((vp_size.x - 300) / 2.0, (vp_size.y - 340) / 2.0)
+	mouse_filter = Control.MOUSE_FILTER_STOP
 	_build_ui()
 
 
@@ -21,7 +30,7 @@ func _build_ui() -> void:
 	add_theme_stylebox_override("panel", bg)
 
 	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 16)
+	vbox.add_theme_constant_override("separation", 12)
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	add_child(vbox)
 
@@ -31,11 +40,37 @@ func _build_ui() -> void:
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(title)
 
+	vbox.add_child(HSeparator.new())
+
+	# Resume
 	var resume_btn := Button.new()
 	resume_btn.text = "Resume"
-	resume_btn.custom_minimum_size = Vector2(200, 40)
+	resume_btn.custom_minimum_size = Vector2(200, 38)
 	resume_btn.pressed.connect(_on_resume)
 	vbox.add_child(resume_btn)
+
+	# Save Game
+	_save_btn = Button.new()
+	_save_btn.text = "Save Game"
+	_save_btn.custom_minimum_size = Vector2(200, 38)
+	_save_btn.pressed.connect(_on_save)
+	_save_btn.disabled = GameState.is_in_dungeon
+	vbox.add_child(_save_btn)
+
+	# Load Game
+	_load_btn = Button.new()
+	_load_btn.text = "Load Game"
+	_load_btn.custom_minimum_size = Vector2(200, 38)
+	_load_btn.pressed.connect(_on_load)
+	_load_btn.disabled = not SaveManager.has_save()
+	vbox.add_child(_load_btn)
+
+	# Main Menu
+	var menu_btn := Button.new()
+	menu_btn.text = "Main Menu"
+	menu_btn.custom_minimum_size = Vector2(200, 38)
+	menu_btn.pressed.connect(_on_main_menu)
+	vbox.add_child(menu_btn)
 
 	var hint := Label.new()
 	hint.text = "Press ESC to resume"
@@ -45,5 +80,24 @@ func _build_ui() -> void:
 	vbox.add_child(hint)
 
 
+func update_button_states() -> void:
+	if _save_btn:
+		_save_btn.disabled = GameState.is_in_dungeon
+	if _load_btn:
+		_load_btn.disabled = not SaveManager.has_save()
+
+
 func _on_resume() -> void:
 	resumed.emit()
+
+
+func _on_save() -> void:
+	save_requested.emit()
+
+
+func _on_load() -> void:
+	load_requested.emit()
+
+
+func _on_main_menu() -> void:
+	main_menu_requested.emit()

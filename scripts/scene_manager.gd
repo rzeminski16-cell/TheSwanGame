@@ -2,6 +2,7 @@ extends Node
 ## SceneManager — Dynamic scene loading.
 ## Child of Main.tscn (not an autoload).
 ## Only one gameplay scene is active at a time.
+## In multiplayer, host triggers scene changes for all clients via MultiplayerManager.
 
 signal scene_changed(new_scene_path: String)
 signal scene_loading_started(scene_path: String)
@@ -36,6 +37,14 @@ func change_scene(scene_path: String) -> void:
 
 	scene_changed.emit(scene_path)
 	print("SceneManager: Changed to " + scene_path)
+
+
+func change_scene_synced(scene_path: String) -> void:
+	## Host-only: change scene on all peers simultaneously.
+	if GameState.is_multiplayer and MultiplayerManager.is_host():
+		MultiplayerManager.request_change_scene(scene_path)
+	else:
+		change_scene(scene_path)
 
 
 func get_current_scene() -> Node:
