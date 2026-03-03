@@ -108,21 +108,18 @@ func _connect_signals() -> void:
 func _process(_delta: float) -> void:
 	_update_mission_tracker()
 	_update_time_display()
+	_poll_input()
 
 
-func _input(event: InputEvent) -> void:
-	if event.is_action_pressed("toggle_inventory"):
+func _poll_input() -> void:
+	if Input.is_action_just_pressed("toggle_inventory"):
 		toggle_inventory()
-		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("toggle_skill_tree"):
+	elif Input.is_action_just_pressed("toggle_skill_tree"):
 		toggle_skill_tree()
-		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("pause"):
+	elif Input.is_action_just_pressed("pause"):
 		_toggle_pause()
-		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("toggle_debug_menu"):
+	elif Input.is_action_just_pressed("toggle_debug_menu"):
 		toggle_debug_menu()
-		get_viewport().set_input_as_handled()
 
 
 # --- HUD ---
