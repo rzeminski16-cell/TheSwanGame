@@ -11,8 +11,10 @@ var _category_containers: Dictionary = {}  # category_name → VBoxContainer
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(280, 500)
-	set_anchors_preset(Control.PRESET_CENTER_RIGHT)
-	position.x -= 300
+	size = Vector2(280, 500)
+	# Position on the right side of the viewport, vertically centered
+	var vp_size := get_viewport_rect().size
+	position = Vector2(vp_size.x - 300, (vp_size.y - 500) / 2.0)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 	_build_ui()
