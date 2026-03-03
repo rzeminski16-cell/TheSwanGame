@@ -21,7 +21,10 @@ func _ready() -> void:
 	scene_manager.change_scene("res://scenes/TestPlayground.tscn")
 
 
-func _unhandled_key_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
+	if not (event is InputEventKey and event.pressed and not event.echo):
+		return
+
 	if event.is_action_pressed("toggle_inventory"):
 		ui_manager.toggle_inventory()
 		get_viewport().set_input_as_handled()
@@ -31,6 +34,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("pause"):
 		ui_manager._toggle_pause()
 		get_viewport().set_input_as_handled()
-	elif event is InputEventKey and event.pressed and event.physical_keycode == KEY_F3:
+	elif event.physical_keycode == KEY_F3:
+		print("Main: F3 detected, opening debug menu")
 		ui_manager.toggle_debug_menu()
 		get_viewport().set_input_as_handled()
