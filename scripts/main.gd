@@ -31,6 +31,6 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("pause"):
 		ui_manager._toggle_pause()
 		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("toggle_debug_menu"):
+	elif event is InputEventKey and event.pressed and event.physical_keycode == KEY_F3:
 		ui_manager.toggle_debug_menu()
 		get_viewport().set_input_as_handled()
