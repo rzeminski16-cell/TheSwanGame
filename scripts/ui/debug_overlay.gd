@@ -13,7 +13,7 @@ func _ready() -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and event.physical_keycode == KEY_F4:
+	if event.is_action_pressed("toggle_debug_overlay"):
 		_visible = !_visible
 		visible = _visible
 

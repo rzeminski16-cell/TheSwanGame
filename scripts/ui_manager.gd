@@ -123,7 +123,7 @@ func _input(event: InputEvent) -> void:
 	elif event.is_action_pressed("pause"):
 		_toggle_pause()
 		get_viewport().set_input_as_handled()
-	elif event.physical_keycode == KEY_F3:
+	elif event.is_action_pressed("toggle_debug_menu"):
 		toggle_debug_menu()
 		get_viewport().set_input_as_handled()
 
