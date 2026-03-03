@@ -93,7 +93,7 @@ test("SaveManager has load_game function", 'func load_game()' in save_mgr_src)
 test("SaveManager has new_game function", 'func new_game()' in save_mgr_src)
 test("SaveManager has has_save function", 'func has_save()' in save_mgr_src)
 test("SaveManager has delete_save function", 'func delete_save()' in save_mgr_src)
-test("SaveManager has apply_death_penalty function", 'func apply_death_penalty()' in save_mgr_src)
+test("SaveManager has apply_death_penalty function", 'func apply_death_penalty(' in save_mgr_src)
 
 for key in REQUIRED_SAVE_KEYS:
     test(f"SaveManager references key '{key}'",

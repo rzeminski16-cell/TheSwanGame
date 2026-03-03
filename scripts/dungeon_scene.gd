@@ -99,14 +99,35 @@ func _build_dungeon_ui() -> void:
 
 
 func _spawn_player() -> void:
-	_player_node = PlayerManager.spawn_player(1, self)
-	if _player_node:
-		_player_node.position = Vector2(640, 500)  # Bottom center of arena
+	# Spawn all active players
+	var player_ids := MultiplayerManager.get_all_player_ids()
+	var spawn_offsets := [Vector2(0, 0), Vector2(40, 0), Vector2(-40, 0), Vector2(0, -40)]
+
+	for i in range(player_ids.size()):
+		var pid: int = player_ids[i]
+		var node := PlayerManager.spawn_player(pid, self)
+		if node == null:
+			continue
+
+		var offset: Vector2 = spawn_offsets[i] if i < spawn_offsets.size() else Vector2(i * 30, 0)
+		node.position = Vector2(640, 500) + offset
 
 		# Heal player to full on dungeon entry
-		var hc = _player_node.get_node_or_null("HealthComponent")
+		var hc = node.get_node_or_null("HealthComponent")
 		if hc and hc.has_method("heal_full"):
 			hc.heal_full()
+
+		# Setup multiplayer authority
+		if node.has_method("setup_multiplayer"):
+			var peer_id := GameState.get_peer_id_for_player(pid)
+			if peer_id <= 0:
+				peer_id = 1
+			node.setup_multiplayer(peer_id)
+
+		# Track the local player for camera/death
+		var is_local := not GameState.is_multiplayer or (pid == MultiplayerManager.get_local_player_id())
+		if is_local:
+			_player_node = node
 
 
 func _connect_signals() -> void:
@@ -114,11 +135,14 @@ func _connect_signals() -> void:
 	DungeonManager.room_cleared.connect(_on_room_cleared)
 	DungeonManager.dungeon_completed.connect(_on_dungeon_completed)
 
-	# Connect player death
-	if _player_node:
-		var hc = _player_node.get_node_or_null("HealthComponent")
-		if hc:
-			hc.died.connect(_on_player_died)
+	# Connect death for all spawned players
+	var player_ids := MultiplayerManager.get_all_player_ids()
+	for pid in player_ids:
+		var node := PlayerManager.get_player_node(pid)
+		if node:
+			var hc = node.get_node_or_null("HealthComponent")
+			if hc:
+				hc.died.connect(_on_player_died)
 
 
 func _on_room_started(room_index: int, total_rooms: int) -> void:

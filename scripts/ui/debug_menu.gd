@@ -105,6 +105,13 @@ func _build_ui() -> void:
 	_add_button("Save/Load", "Load Game", _on_load_game)
 	_add_button("Save/Load", "Delete Save", _on_delete_save)
 
+	# --- Multiplayer Category ---
+	_add_category("Multiplayer")
+	_add_button("Multiplayer", "Host Game (port 9999)", _on_mp_host)
+	_add_button("Multiplayer", "Join Localhost", _on_mp_join_local)
+	_add_button("Multiplayer", "Disconnect", _on_mp_disconnect)
+	_add_button("Multiplayer", "Print Peer Info", _on_mp_info)
+
 	# Close button
 	_content.add_child(HSeparator.new())
 	var close_btn := Button.new()
@@ -339,6 +346,35 @@ func _on_load_game() -> void:
 func _on_delete_save() -> void:
 	SaveManager.delete_save()
 	print("DebugMenu: Save file deleted")
+
+
+# --- Multiplayer Actions ---
+
+func _on_mp_host() -> void:
+	GameState.player_count = 2
+	var success := MultiplayerManager.host_game()
+	print("DebugMenu: Host game → %s" % ("success" if success else "failed"))
+
+func _on_mp_join_local() -> void:
+	var success := MultiplayerManager.join_game("127.0.0.1")
+	print("DebugMenu: Join localhost → %s" % ("success" if success else "failed"))
+
+func _on_mp_disconnect() -> void:
+	MultiplayerManager.disconnect_game()
+	print("DebugMenu: Disconnected")
+
+func _on_mp_info() -> void:
+	print("--- Multiplayer Info ---")
+	print("  is_multiplayer: %s" % GameState.is_multiplayer)
+	print("  is_host: %s" % GameState.is_host)
+	print("  player_count: %d" % GameState.player_count)
+	print("  active_peer_ids: %s" % str(GameState.active_peer_ids))
+	print("  peer_player_map: %s" % str(GameState.peer_player_map))
+	print("  player_names: %s" % str(GameState.player_names))
+	if GameState.is_multiplayer:
+		print("  my_peer_id: %d" % multiplayer.get_unique_id())
+		print("  my_player_id: %d" % MultiplayerManager.get_local_player_id())
+	print("------------------------")
 
 
 # --- Utility ---

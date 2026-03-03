@@ -198,20 +198,39 @@ func _create_location(loc_def: Dictionary) -> Area2D:
 
 
 func _spawn_player() -> void:
-	_player_node = PlayerManager.spawn_player(1, self)
-	if _player_node:
-		_player_node.position = Vector2(260, 250)
+	# Spawn all active players
+	var player_ids := MultiplayerManager.get_all_player_ids()
+	var spawn_offsets := [Vector2(0, 0), Vector2(40, 0), Vector2(0, 40), Vector2(40, 40)]
 
-		# Setup camera to follow player
-		var camera := Camera2D.new()
-		camera.enabled = true
-		camera.limit_left = 0
-		camera.limit_top = 0
-		camera.limit_right = int(MAP_WIDTH)
-		camera.limit_bottom = int(MAP_HEIGHT)
-		camera.position_smoothing_enabled = true
-		camera.position_smoothing_speed = 8.0
-		_player_node.add_child(camera)
+	for i in range(player_ids.size()):
+		var pid: int = player_ids[i]
+		var node := PlayerManager.spawn_player(pid, self)
+		if node == null:
+			continue
+
+		var offset: Vector2 = spawn_offsets[i] if i < spawn_offsets.size() else Vector2(i * 30, 0)
+		node.position = Vector2(260, 250) + offset
+
+		# Setup multiplayer authority
+		if node.has_method("setup_multiplayer"):
+			var peer_id := GameState.get_peer_id_for_player(pid)
+			if peer_id <= 0:
+				peer_id = 1  # Single player default
+			node.setup_multiplayer(peer_id)
+
+		# Camera follows the local player only
+		var is_local := not GameState.is_multiplayer or (pid == MultiplayerManager.get_local_player_id())
+		if is_local:
+			_player_node = node
+			var camera := Camera2D.new()
+			camera.enabled = true
+			camera.limit_left = 0
+			camera.limit_top = 0
+			camera.limit_right = int(MAP_WIDTH)
+			camera.limit_bottom = int(MAP_HEIGHT)
+			camera.position_smoothing_enabled = true
+			camera.position_smoothing_speed = 8.0
+			node.add_child(camera)
 
 
 func _input(event: InputEvent) -> void:

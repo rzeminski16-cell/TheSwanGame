@@ -124,10 +124,12 @@ func _on_enemy_died(enemy_node: Node, enemy_data: Dictionary) -> void:
 	var pos: Vector2 = enemy_node.global_position
 	var eid: String = enemy_data.get("id", "")
 
-	# Award XP to player 1 (multiplayer distribution in Phase 7)
+	# Award XP to all active players
 	var xp_reward: int = enemy_data.get("xp_reward", 0)
 	if xp_reward > 0:
-		PlayerManager.add_xp(1, xp_reward)
+		var player_ids := MultiplayerManager.get_all_player_ids()
+		for pid in player_ids:
+			PlayerManager.add_xp(pid, xp_reward)
 
 	# Drop money
 	var money_drop: Dictionary = enemy_data.get("money_drop", {})

@@ -133,6 +133,8 @@ func show_main_menu() -> void:
 		_main_menu = packed.instantiate()
 		_main_menu.new_game_pressed.connect(_on_new_game)
 		_main_menu.continue_pressed.connect(_on_continue)
+		_main_menu.host_game_pressed.connect(_on_host_game)
+		_main_menu.join_game_pressed.connect(_on_join_game)
 		_main_menu.quit_pressed.connect(_on_quit)
 		add_child(_main_menu)
 
@@ -161,6 +163,49 @@ func _on_continue() -> void:
 
 func _on_quit() -> void:
 	get_tree().quit()
+
+
+func _on_host_game() -> void:
+	_main_menu.set_status("Starting server...")
+	var success := MultiplayerManager.host_game()
+	if success:
+		_main_menu.set_status("Hosting! Waiting for players...")
+		MultiplayerManager.connection_succeeded.connect(_on_mp_ready, CONNECT_ONE_SHOT)
+		# Host can start immediately — wait a moment for others to join
+		# For now, start after a short delay or when players connect
+		_start_multiplayer_game()
+	else:
+		_main_menu.set_status("Failed to host game")
+
+
+func _on_join_game(address: String) -> void:
+	_main_menu.set_status("Connecting to %s..." % address)
+	var success := MultiplayerManager.join_game(address)
+	if success:
+		MultiplayerManager.connection_succeeded.connect(_on_mp_connected, CONNECT_ONE_SHOT)
+		MultiplayerManager.connection_failed.connect(_on_mp_connect_failed, CONNECT_ONE_SHOT)
+	else:
+		_main_menu.set_status("Failed to connect")
+
+
+func _on_mp_connected() -> void:
+	_main_menu.set_status("Connected! Starting game...")
+	# Wait a moment for assignment sync
+	await get_tree().create_timer(0.5).timeout
+	_start_multiplayer_game()
+
+
+func _on_mp_connect_failed() -> void:
+	_main_menu.set_status("Connection failed!")
+
+
+func _on_mp_ready() -> void:
+	pass  # Host already started
+
+
+func _start_multiplayer_game() -> void:
+	hide_main_menu()
+	SaveManager.new_game()
 
 
 # --- Game Over Screen ---
@@ -392,6 +437,7 @@ func _on_pause_main_menu() -> void:
 
 
 func _go_to_main_menu() -> void:
+	MultiplayerManager.disconnect_game()
 	show_main_menu()
 
 

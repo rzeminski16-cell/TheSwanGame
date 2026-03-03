@@ -1,13 +1,14 @@
 extends Node
 ## SaveManager — Serialization and persistence.
 ## Collects state from all managers, serializes to JSON, restores on load.
+## Version 2: multiplayer support (player_count, multiplayer flag).
 
 signal game_saved()
 signal game_loaded()
 signal save_failed(reason: String)
 
 const SAVE_PATH := "user://save_data.json"
-const SAVE_VERSION := 1
+const SAVE_VERSION := 2
 
 
 func save_game() -> bool:
@@ -18,6 +19,8 @@ func save_game() -> bool:
 
 	var save_data := {
 		"version": SAVE_VERSION,
+		"multiplayer": GameState.is_multiplayer,
+		"player_count": GameState.player_count,
 		"scene_path": GameState.current_scene_path,
 		"players": {},
 		"economy": {},
@@ -29,9 +32,14 @@ func save_game() -> bool:
 
 	# Save per-player data
 	for player_id in range(1, GameState.player_count + 1):
-		save_data["players"][str(player_id)] = PlayerManager.get_save_data(player_id)
-		save_data["economy"][str(player_id)] = EconomyManager.get_save_data(player_id)
-		save_data["inventory"][str(player_id)] = InventoryManager.get_save_data(player_id)
+		var pid_str := str(player_id)
+		save_data["players"][pid_str] = PlayerManager.get_save_data(player_id)
+		save_data["economy"][pid_str] = EconomyManager.get_save_data(player_id)
+		save_data["inventory"][pid_str] = InventoryManager.get_save_data(player_id)
+
+	# Save player names if multiplayer
+	if GameState.is_multiplayer:
+		save_data["player_names"] = GameState.player_names.duplicate()
 
 	var json_string := JSON.stringify(save_data, "  ")
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -73,6 +81,10 @@ func load_game() -> bool:
 		push_error("SaveManager: Save data is not a dictionary")
 		return false
 
+	# Restore player count from save
+	var saved_player_count: int = int(save_data.get("player_count", 1))
+	GameState.player_count = saved_player_count
+
 	# Restore per-player data
 	var players: Dictionary = save_data.get("players", {})
 	var economy: Dictionary = save_data.get("economy", {})
@@ -95,6 +107,10 @@ func load_game() -> bool:
 	MissionManager.load_save_data(save_data.get("missions", {}))
 	TimeManager.load_save_data(save_data.get("time", {}))
 
+	# Restore player names if present
+	if save_data.has("player_names"):
+		GameState.player_names = save_data["player_names"]
+
 	# Restore scene
 	var scene_path: String = save_data.get("scene_path", "res://scenes/OverworldScene.tscn")
 	var scene_manager = get_node_or_null("/root/Main/SceneManager")
@@ -102,17 +118,19 @@ func load_game() -> bool:
 		scene_manager.change_scene(scene_path)
 
 	game_loaded.emit()
-	print("SaveManager: Game loaded from %s" % SAVE_PATH)
+	print("SaveManager: Game loaded from %s (player_count: %d)" % [SAVE_PATH, saved_player_count])
 	return true
 
 
 func new_game() -> void:
 	delete_save()
 
-	# Reset all managers to fresh state
-	PlayerManager.reset_player(1)
-	EconomyManager.load_save_data(1, 0)
-	InventoryManager.load_save_data(1, [])
+	# Reset all players
+	for player_id in range(1, GameState.player_count + 1):
+		PlayerManager.reset_player(player_id)
+		EconomyManager.load_save_data(player_id, 0)
+		InventoryManager.load_save_data(player_id, [])
+
 	DungeonManager.load_save_data({})
 	MissionManager.load_save_data({})
 	TimeManager.load_save_data({})
@@ -126,27 +144,27 @@ func new_game() -> void:
 	MissionManager.start_mission("mission_tutorial")
 	TimeManager.start_time()
 
-	print("SaveManager: New game started")
+	print("SaveManager: New game started (player_count: %d)" % GameState.player_count)
 
 
-func apply_death_penalty() -> void:
-	## Apply death penalty: lose money and items per global_config settings.
+func apply_death_penalty(player_id: int = 1) -> void:
+	## Apply death penalty to a specific player: lose money and items.
 	var config: Dictionary = DataManager.get_config()
 	var penalty: Dictionary = config.get("death_penalty", {})
 
 	var money_loss_pct: float = float(penalty.get("money_loss_percent", 0.10))
 	var item_loss_count: int = int(penalty.get("item_loss_count", 1))
 
-	var current_money: int = EconomyManager.get_money(1)
+	var current_money: int = EconomyManager.get_money(player_id)
 	var money_lost: int = roundi(float(current_money) * money_loss_pct)
 	if money_lost > 0:
-		EconomyManager.deduct_money(1, money_lost)
-		print("SaveManager: Death penalty — lost %d money" % money_lost)
+		EconomyManager.deduct_money(player_id, money_lost)
+		print("SaveManager: Death penalty (player %d) — lost %d money" % [player_id, money_lost])
 
 	for i in range(item_loss_count):
-		var lost_item := InventoryManager.remove_random_item(1)
+		var lost_item := InventoryManager.remove_random_item(player_id)
 		if lost_item != "":
-			print("SaveManager: Death penalty — lost item '%s'" % lost_item)
+			print("SaveManager: Death penalty (player %d) — lost item '%s'" % [player_id, lost_item])
 
 
 func has_save() -> bool:
