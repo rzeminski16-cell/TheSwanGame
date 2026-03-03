@@ -28,7 +28,8 @@ docs/
     ├── PHASE_2.md                   # Combat core, enemies, damage, loot
     ├── PHASE_3.md                   # Economy, UI, skill tree
     ├── PHASE_4.md                   # Dungeon system, rooms, waves, boss, scaling
-    └── PHASE_5.md                   # Overworld, missions, time, delivery, debug menu
+    ├── PHASE_5.md                   # Overworld, missions, time, delivery, debug menu
+    └── PHASE_6.md                   # Save/load, main menu, game flow
 ```
 
 ---
@@ -94,7 +95,7 @@ After demo is stable, expand content.
 | 3 | Economy, UI, Skill Tree | Complete |
 | 4 | Dungeon System — Rooms, Waves, Boss, Scaling | Complete |
 | 5 | Overworld, Missions, Time, Delivery, Debug Menu | Complete |
-| 6 | Save/Load + Game Flow | Planned |
+| 6 | Save/Load + Game Flow | Complete |
 | 7 | LAN Multiplayer | Planned |
 | 8 | Audio, Visuals, Cutscenes | Planned |
 | 9 | Integration Testing + Balance Pass | Planned |

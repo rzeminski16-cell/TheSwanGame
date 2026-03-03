@@ -17,8 +17,8 @@ func _ready() -> void:
 	print("Main: Dungeons loaded = %d" % DataManager.get_all_dungeons().size())
 	print("Main: Missions loaded = %d" % DataManager.get_all_missions().size())
 
-	# Load the test playground by default
-	scene_manager.change_scene("res://scenes/TestPlayground.tscn")
+	# Show main menu on launch
+	ui_manager.show_main_menu()
 
 
 func _input(event: InputEvent) -> void:

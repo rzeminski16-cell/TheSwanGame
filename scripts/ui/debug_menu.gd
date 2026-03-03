@@ -99,6 +99,12 @@ func _build_ui() -> void:
 	_add_button("Scenes", "Enter Abandoned Tunnel", _on_enter_tunnel)
 	_add_button("Scenes", "Start Delivery", _on_start_delivery)
 
+	# --- Save/Load Category ---
+	_add_category("Save/Load")
+	_add_button("Save/Load", "Save Game", _on_save_game)
+	_add_button("Save/Load", "Load Game", _on_load_game)
+	_add_button("Save/Load", "Delete Save", _on_delete_save)
+
 	# Close button
 	_content.add_child(HSeparator.new())
 	var close_btn := Button.new()
@@ -318,6 +324,21 @@ func _on_start_delivery() -> void:
 	var sm = get_node_or_null("/root/Main/SceneManager")
 	if sm:
 		sm.change_scene("res://scenes/Minigame_Delivery.tscn")
+
+
+# --- Save/Load Actions ---
+
+func _on_save_game() -> void:
+	var success := SaveManager.save_game()
+	print("DebugMenu: Save game → %s" % ("success" if success else "failed"))
+
+func _on_load_game() -> void:
+	var success := SaveManager.load_game()
+	print("DebugMenu: Load game → %s" % ("success" if success else "failed"))
+
+func _on_delete_save() -> void:
+	SaveManager.delete_save()
+	print("DebugMenu: Save file deleted")
 
 
 # --- Utility ---

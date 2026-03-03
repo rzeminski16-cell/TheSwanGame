@@ -8,6 +8,8 @@ const SKILL_TREE_SCENE := "res://scenes/ui/SkillTreePanel.tscn"
 const INVENTORY_SCENE := "res://scenes/ui/InventoryPanel.tscn"
 const PAUSE_MENU_SCENE := "res://scenes/ui/PauseMenu.tscn"
 const DEBUG_MENU_SCENE := "res://scenes/ui/DebugMenu.tscn"
+const MAIN_MENU_SCENE := "res://scenes/ui/MainMenu.tscn"
+const GAME_OVER_SCENE := "res://scenes/ui/GameOverScreen.tscn"
 
 signal hud_toggled(visible_state: bool)
 signal screen_opened(screen_name: String)
@@ -18,10 +20,13 @@ var _skill_tree_panel: PanelContainer
 var _inventory_panel: PanelContainer
 var _pause_menu: PanelContainer
 var _debug_menu: PanelContainer
+var _main_menu: PanelContainer
+var _game_over_screen: PanelContainer
 var _notification_container: VBoxContainer
 var _mission_tracker: VBoxContainer
 var _time_display: Label
 var _is_paused: bool = false
+var _in_main_menu: bool = false
 
 
 func _ready() -> void:
@@ -104,10 +109,87 @@ func _connect_signals() -> void:
 	MissionManager.mission_completed.connect(_on_mission_completed)
 	MissionManager.objective_completed.connect(_on_objective_completed)
 
+	# Connect to SaveManager for save/load notifications
+	SaveManager.game_saved.connect(func(): show_notification("Game saved!", 2.0))
+	SaveManager.game_loaded.connect(func(): show_notification("Game loaded!", 2.0))
+
 
 func _process(_delta: float) -> void:
-	_update_mission_tracker()
-	_update_time_display()
+	if not _in_main_menu:
+		_update_mission_tracker()
+		_update_time_display()
+
+
+# --- Main Menu ---
+
+func show_main_menu() -> void:
+	_in_main_menu = true
+	hide_hud()
+
+	if _main_menu == null:
+		var packed := load(MAIN_MENU_SCENE) as PackedScene
+		if packed == null:
+			return
+		_main_menu = packed.instantiate()
+		_main_menu.new_game_pressed.connect(_on_new_game)
+		_main_menu.continue_pressed.connect(_on_continue)
+		_main_menu.quit_pressed.connect(_on_quit)
+		add_child(_main_menu)
+
+	_main_menu.visible = true
+	screen_opened.emit("main_menu")
+
+
+func hide_main_menu() -> void:
+	_in_main_menu = false
+	if _main_menu:
+		_main_menu.visible = false
+	show_hud()
+	screen_closed.emit("main_menu")
+
+
+func _on_new_game() -> void:
+	hide_main_menu()
+	SaveManager.new_game()
+
+
+func _on_continue() -> void:
+	hide_main_menu()
+	SaveManager.load_game()
+
+
+func _on_quit() -> void:
+	get_tree().quit()
+
+
+# --- Game Over Screen ---
+
+func show_game_over() -> void:
+	if _game_over_screen == null:
+		var packed := load(GAME_OVER_SCENE) as PackedScene
+		if packed == null:
+			return
+		_game_over_screen = packed.instantiate()
+		_game_over_screen.load_save_pressed.connect(_on_game_over_load)
+		_game_over_screen.main_menu_pressed.connect(_on_game_over_menu)
+		add_child(_game_over_screen)
+
+	_game_over_screen.visible = true
+	screen_opened.emit("game_over")
+
+
+func _on_game_over_load() -> void:
+	if _game_over_screen:
+		_game_over_screen.visible = false
+	screen_closed.emit("game_over")
+	SaveManager.load_game()
+
+
+func _on_game_over_menu() -> void:
+	if _game_over_screen:
+		_game_over_screen.visible = false
+	screen_closed.emit("game_over")
+	_go_to_main_menu()
 
 
 # --- HUD ---
@@ -127,7 +209,7 @@ func hide_hud() -> void:
 # --- Inventory Panel ---
 
 func toggle_inventory() -> void:
-	if _is_paused:
+	if _is_paused or _in_main_menu:
 		return
 
 	# Close skill tree if open
@@ -161,7 +243,7 @@ func _close_inventory() -> void:
 # --- Skill Tree Panel ---
 
 func toggle_skill_tree() -> void:
-	if _is_paused:
+	if _is_paused or _in_main_menu:
 		return
 
 	# Close inventory if open
@@ -223,6 +305,9 @@ func _close_debug_menu() -> void:
 # --- Pause Menu ---
 
 func _toggle_pause() -> void:
+	if _in_main_menu:
+		return
+
 	# If a panel is open, close it instead of pausing
 	if _debug_menu and _debug_menu.visible:
 		_close_debug_menu()
@@ -251,7 +336,12 @@ func _pause() -> void:
 			return
 		_pause_menu = packed.instantiate()
 		_pause_menu.resumed.connect(_unpause)
+		_pause_menu.save_requested.connect(_on_pause_save)
+		_pause_menu.load_requested.connect(_on_pause_load)
+		_pause_menu.main_menu_requested.connect(_on_pause_main_menu)
 		add_child(_pause_menu)
+
+	_pause_menu.update_button_states()
 	_pause_menu.visible = true
 	screen_opened.emit("pause")
 
@@ -264,6 +354,30 @@ func _unpause() -> void:
 	if _pause_menu:
 		_pause_menu.visible = false
 	screen_closed.emit("pause")
+
+
+func _on_pause_save() -> void:
+	var success := SaveManager.save_game()
+	if success:
+		_pause_menu.update_button_states()
+
+
+func _on_pause_load() -> void:
+	_unpause()
+	SaveManager.load_game()
+
+
+func _on_pause_main_menu() -> void:
+	_unpause()
+	_go_to_main_menu()
+
+
+func _go_to_main_menu() -> void:
+	# Clear the current scene and show main menu
+	var scene_manager = get_node_or_null("/root/Main/SceneManager")
+	if scene_manager:
+		scene_manager.change_scene("res://scenes/ui/MainMenu.tscn")
+	show_main_menu()
 
 
 # --- Mission Tracker ---

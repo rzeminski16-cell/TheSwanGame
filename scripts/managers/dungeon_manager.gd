@@ -132,7 +132,7 @@ func fail_dungeon() -> void:
 
 
 func _exit_to_previous_scene() -> void:
-	var target := _return_scene if _return_scene != "" else "res://scenes/TestPlayground.tscn"
+	var target := _return_scene if _return_scene != "" else "res://scenes/OverworldScene.tscn"
 	var scene_manager = get_node_or_null("/root/Main/SceneManager")
 	if scene_manager:
 		scene_manager.change_scene(target)
