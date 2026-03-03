@@ -111,9 +111,6 @@ func _process(_delta: float) -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if not (event is InputEventKey and event.pressed):
-		return
-
 	if event.is_action_pressed("toggle_inventory"):
 		toggle_inventory()
 		get_viewport().set_input_as_handled()
