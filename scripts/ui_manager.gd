@@ -27,7 +27,7 @@ var _mission_tracker: VBoxContainer
 var _time_display: Label
 var _screen_transition: ColorRect = null
 var _dialogue_box: Control = null
-var _visual_effects: CanvasModulate = null
+var _visual_effects: Node = null
 var _cutscene_player: Node = null
 var _is_paused: bool = false
 var _in_main_menu: bool = false
