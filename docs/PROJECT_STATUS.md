@@ -137,6 +137,37 @@ All balance values verified by automated tests (Phase 9):
 
 ---
 
+## Balance Observations & Recommendations
+
+These are not bugs — the game runs correctly — but tuning points a developer should be aware of:
+
+### 1. XP Progression May Feel Grindy (Medium Priority)
+
+Total mission XP is ~600. XP needed to reach level 5 is ~2,821 cumulative. Players must grind the Abandoned Tunnel repeatedly to cap level.
+
+**Options to tune (edit `global_config.json`):**
+- Lower `xp_curve_exponent` from 1.5 to ~1.2-1.3 (reduces total XP needed)
+- Or increase mission XP rewards in `missions.json`
+- Or increase enemy `xp_reward` values in `enemies.json`
+
+### 2. Difficulty Scaling Exceeds 2x at Cap (Low Priority)
+
+With `difficulty_multiplier_cap: 3.0` and `enemy_health_scaling: 0.12`, enemy HP can reach ~2.6x base at max difficulty. The design doc mentions a soft 2x cap for demo.
+
+**Fix:** Lower `difficulty_multiplier_cap` to 2.5 in `global_config.json`, or accept as intentional late-game challenge.
+
+### 3. No Epic-Rarity Items (Low Priority)
+
+All 10 items are common (8) or rare (2). The `base_rarity_distribution` in config defines 5% epic chance, but no items are tagged epic. The Golden Idol functions as epic-tier power-wise but is marked rare.
+
+**Fix:** Change `golden_idol` rarity to "epic" in `items.json`, or add a dedicated epic item.
+
+### 4. Skill Tree: 4 Points for 15 Skills (By Design)
+
+Players get 4 skill points by level 5 but there are 15 skills. This is intentional — it forces meaningful build choices and adds replayability. No change needed.
+
+---
+
 ## Architecture Notes for Developers
 
 ### Key Principles
