@@ -13,6 +13,7 @@ var _loot_tables: Dictionary = {}   # id → loot table dict
 var _dungeons: Dictionary = {}      # id → dungeon dict
 var _missions: Dictionary = {}      # id → mission dict
 var _delivery_jobs: Array = []
+var _characters: Dictionary = {}   # id → character dict
 
 var _load_errors: Array[String] = []
 
@@ -37,6 +38,7 @@ func load_all() -> void:
 	_load_dungeons()
 	_load_missions()
 	_load_delivery_jobs()
+	_load_characters()
 	_validate_references()
 
 
@@ -130,6 +132,23 @@ func get_mission(id: String) -> Dictionary:
 
 func get_all_missions() -> Array:
 	return _missions.values()
+
+
+# --- Characters ---
+
+func get_character(id: String) -> Dictionary:
+	if not _characters.has(id):
+		push_warning("DataManager: Character '%s' not found." % id)
+		return {}
+	return _characters[id]
+
+
+func get_all_characters() -> Array:
+	return _characters.values()
+
+
+func get_character_ids() -> Array:
+	return _characters.keys()
 
 
 # --- Delivery Jobs ---
@@ -233,6 +252,15 @@ func _load_missions() -> void:
 		print("DataManager: Loaded %d missions" % _missions.size())
 	else:
 		_load_errors.append("missions.json must contain 'missions' array")
+
+
+func _load_characters() -> void:
+	var data = _load_json("characters.json")
+	if data is Dictionary and data.has("characters"):
+		_characters = _index_by_id(data["characters"])
+		print("DataManager: Loaded %d characters" % _characters.size())
+	else:
+		_load_errors.append("characters.json must contain 'characters' array")
 
 
 func _load_delivery_jobs() -> void:

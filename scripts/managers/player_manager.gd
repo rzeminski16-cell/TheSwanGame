@@ -174,11 +174,16 @@ func get_effective_stat(player_id: int, stat: String) -> float:
 	# Skill modifiers from SkillManager
 	var skill_mods: Dictionary = SkillManager.get_skill_modifiers(player_id)
 
+	# Character-specific modifiers
+	var char_mods := _get_character_modifiers(stat)
+
 	var flat_bonus: float = level_bonuses["flat"]
+	flat_bonus += char_mods["flat"]
 	flat_bonus += float(item_mods.get(stat + "_flat", 0))
 	flat_bonus += float(skill_mods.get(stat + "_flat", 0))
 
 	var percent_bonus: float = level_bonuses["percent"]
+	percent_bonus += char_mods["percent"]
 	percent_bonus += float(item_mods.get(stat + "_percent", 0))
 	percent_bonus += float(skill_mods.get(stat + "_percent", 0))
 
@@ -222,6 +227,35 @@ func _apply_soft_cap(stat: String, raw_value: float) -> float:
 	# Soft cap formula: capped = max × (1 - e^(-raw / scaling_factor))
 	var capped: float = cap_max * (1.0 - exp(-raw_value / scaling))
 	return capped
+
+
+func _get_character_modifiers(stat: String) -> Dictionary:
+	var char_id := GameState.active_character_id
+	if char_id == "":
+		return {"flat": 0.0, "percent": 0.0}
+	var char_data: Dictionary = DataManager.get_character(char_id)
+	var mods: Dictionary = char_data.get("base_stat_modifiers", {})
+	return {
+		"flat": float(mods.get(stat + "_flat", 0)),
+		"percent": float(mods.get(stat + "_percent", 0)),
+	}
+
+
+func get_character_color() -> Color:
+	var char_id := GameState.active_character_id
+	if char_id == "":
+		return Color(0.2, 0.6, 0.3, 1.0)  # Default green
+	var char_data: Dictionary = DataManager.get_character(char_id)
+	var c: Array = char_data.get("color", [0.2, 0.6, 0.3, 1.0])
+	if c.size() >= 4:
+		return Color(c[0], c[1], c[2], c[3])
+	return Color(0.2, 0.6, 0.3, 1.0)
+
+
+func set_active_character(character_id: String) -> void:
+	GameState.active_character_id = character_id
+	_apply_stats_to_node(1)
+	stats_changed.emit(1)
 
 
 # --- Apply stats to player node ---
