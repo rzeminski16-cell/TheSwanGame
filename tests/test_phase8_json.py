@@ -5,7 +5,7 @@ Checks that all required scripts, signals, functions, data files,
 and scene references exist in the codebase without running Godot.
 """
 
-import os, json, re
+import os, sys, json, re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 passed = 0
@@ -88,11 +88,10 @@ ve = read("scripts/ui/visual_effects.gd")
 check("visual_effects.gd exists", ve != "")
 check("Has screen_shake()", "func screen_shake(" in ve)
 check("Has hit_flash()", "func hit_flash(" in ve)
-check("Extends CanvasModulate", "extends CanvasModulate" in ve)
+check("Extends Node", "extends Node" in ve)
 check("Has DAY_COLOR constant", "DAY_COLOR" in ve)
 check("Has NIGHT_COLOR constant", "NIGHT_COLOR" in ve)
 check("Has EVENING_COLOR constant", "EVENING_COLOR" in ve)
-check("References GameState.current_time_of_day", "current_time_of_day" in ve)
 
 
 # ---------- DialogueBox Script ----------

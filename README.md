@@ -31,8 +31,11 @@ docs/
     ├── PHASE_5.md                   # Overworld, missions, time, delivery, debug menu
     ├── PHASE_6.md                   # Save/load, main menu, game flow
     ├── PHASE_7.md                   # LAN multiplayer
-    └── PHASE_8.md                   # Audio, visuals, cutscenes
+    ├── PHASE_8.md                   # Audio, visuals, cutscenes
+    └── PHASE_9.md                   # Integration testing + balance pass
 ```
+
+> See **[PROJECT_STATUS.md](docs/PROJECT_STATUS.md)** for a full summary of everything implemented, balance data, test coverage, and developer guide.
 
 ---
 
@@ -100,4 +103,4 @@ After demo is stable, expand content.
 | 6 | Save/Load + Game Flow | Complete |
 | 7 | LAN Multiplayer | Complete |
 | 8 | Audio, Visuals, Cutscenes | Complete |
-| 9 | Integration Testing + Balance Pass | Planned |
+| 9 | Integration Testing + Balance Pass | Complete |
