@@ -1,0 +1,51 @@
+{
+  "cutscene_tutorial_intro": {
+    "id": "cutscene_tutorial_intro",
+    "trigger_mission": "mission_tutorial",
+    "trigger_point": "start",
+    "lines": [
+      {"speaker": "Hannan", "text": "Hey, you must be the new tenant! Welcome to Bay Campus."},
+      {"speaker": "Hannan", "text": "I'm Hannan. I live down the hall. Let me show you around."},
+      {"speaker": "Hannan", "text": "First things first — you need to find your house. It's just over there."},
+      {"speaker": "You", "text": "Thanks! This place looks... interesting."},
+      {"speaker": "Hannan", "text": "Oh, it is. Just watch out for the crabs near the cave. They bite."}
+    ]
+  },
+  "cutscene_first_delivery": {
+    "id": "cutscene_first_delivery",
+    "trigger_mission": "mission_first_delivery",
+    "trigger_point": "start",
+    "lines": [
+      {"speaker": "Lewis", "text": "Psst! You! Yeah, you. Need some quick cash?"},
+      {"speaker": "You", "text": "Um... who are you?"},
+      {"speaker": "Lewis", "text": "I'm Lewis. Your roommate. Sort of. It's complicated."},
+      {"speaker": "Lewis", "text": "Anyway, the delivery board near the campus center has jobs. Easy money."},
+      {"speaker": "You", "text": "Sounds better than fighting crabs, I guess."}
+    ]
+  },
+  "cutscene_crab_cave": {
+    "id": "cutscene_crab_cave",
+    "trigger_mission": "mission_crab_cave",
+    "trigger_point": "start",
+    "lines": [
+      {"speaker": "Jack", "text": "Oi! Have you heard about the Crab Cave?"},
+      {"speaker": "You", "text": "The cave with the crabs? Hannan warned me about it."},
+      {"speaker": "Jack", "text": "Yeah, but there's TREASURE in there. And a massive crab. The Crab King!"},
+      {"speaker": "Jack", "text": "If you clear it out, we'll all sleep better at night. Plus, good loot."},
+      {"speaker": "You", "text": "Fine. How hard can it be?"},
+      {"speaker": "Jack", "text": "That's the spirit! Probably won't die. Probably."}
+    ]
+  },
+  "cutscene_rent_due": {
+    "id": "cutscene_rent_due",
+    "trigger_mission": "mission_pay_rent",
+    "trigger_point": "start",
+    "lines": [
+      {"speaker": "Luka", "text": "Hey. Rent's due. You know where the rent box is, yeah?"},
+      {"speaker": "You", "text": "How much?"},
+      {"speaker": "Luka", "text": "250. Every week. Non-negotiable."},
+      {"speaker": "Luka", "text": "Miss a payment and, well... let's not find out."},
+      {"speaker": "You", "text": "Great. Very reassuring."}
+    ]
+  }
+}
