@@ -42,6 +42,7 @@ func _ready() -> void:
 	_setup_mission_tracker()
 	_setup_time_display()
 	_setup_screen_transition()
+	_setup_visual_effects()
 	_setup_dialogue_box()
 	_setup_cutscene_player()
 	_connect_signals()
@@ -99,6 +100,13 @@ func _setup_screen_transition() -> void:
 	var sm = get_node_or_null("/root/Main/SceneManager")
 	if sm and sm.has_method("set_screen_transition"):
 		sm.set_screen_transition(_screen_transition)
+
+
+func _setup_visual_effects() -> void:
+	var script := load("res://scripts/ui/visual_effects.gd")
+	_visual_effects = Node.new()
+	_visual_effects.set_script(script)
+	add_child(_visual_effects)
 
 
 func _setup_dialogue_box() -> void:
