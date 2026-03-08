@@ -112,6 +112,20 @@ func _build_ui() -> void:
 	_add_button("Multiplayer", "Disconnect", _on_mp_disconnect)
 	_add_button("Multiplayer", "Print Peer Info", _on_mp_info)
 
+	# --- Audio/Visual Category ---
+	_add_category("Audio/Visual")
+	_add_button("Audio/Visual", "Play BGM: Overworld", _on_bgm_overworld)
+	_add_button("Audio/Visual", "Play BGM: Dungeon", _on_bgm_dungeon)
+	_add_button("Audio/Visual", "Play BGM: Boss", _on_bgm_boss)
+	_add_button("Audio/Visual", "Stop BGM", _on_stop_bgm)
+	_add_button("Audio/Visual", "Play SFX: Hit", _on_sfx_hit)
+	_add_button("Audio/Visual", "Play SFX: Level Up", _on_sfx_level_up)
+	_add_button("Audio/Visual", "Play SFX: Pickup", _on_sfx_pickup)
+	_add_button("Audio/Visual", "Toggle Mute", _on_toggle_mute)
+	_add_button("Audio/Visual", "Screen Shake", _on_screen_shake)
+	_add_button("Audio/Visual", "Play Cutscene: Intro", _on_play_cutscene_intro)
+	_add_button("Audio/Visual", "Play Cutscene: Cave", _on_play_cutscene_cave)
+
 	# Close button
 	_content.add_child(HSeparator.new())
 	var close_btn := Button.new()
@@ -375,6 +389,62 @@ func _on_mp_info() -> void:
 		print("  my_peer_id: %d" % multiplayer.get_unique_id())
 		print("  my_player_id: %d" % MultiplayerManager.get_local_player_id())
 	print("------------------------")
+
+
+# --- Audio/Visual Actions ---
+
+func _get_audio() -> Node:
+	return get_node_or_null("/root/Main/AudioManager")
+
+func _on_bgm_overworld() -> void:
+	var a := _get_audio()
+	if a: a.play_bgm("overworld")
+
+func _on_bgm_dungeon() -> void:
+	var a := _get_audio()
+	if a: a.play_bgm("dungeon")
+
+func _on_bgm_boss() -> void:
+	var a := _get_audio()
+	if a: a.play_bgm("boss")
+
+func _on_stop_bgm() -> void:
+	var a := _get_audio()
+	if a: a.stop_bgm()
+
+func _on_sfx_hit() -> void:
+	var a := _get_audio()
+	if a: a.play_sfx("hit")
+
+func _on_sfx_level_up() -> void:
+	var a := _get_audio()
+	if a: a.play_sfx("level_up")
+
+func _on_sfx_pickup() -> void:
+	var a := _get_audio()
+	if a: a.play_sfx("pickup")
+
+func _on_toggle_mute() -> void:
+	var a := _get_audio()
+	if a:
+		a.toggle_mute()
+		print("DebugMenu: Mute → %s" % a.is_muted())
+
+func _on_screen_shake() -> void:
+	var ui = get_node_or_null("/root/Main/UIManager")
+	if ui and ui._visual_effects:
+		ui._visual_effects.screen_shake(8.0)
+		print("DebugMenu: Screen shake triggered")
+
+func _on_play_cutscene_intro() -> void:
+	var ui = get_node_or_null("/root/Main/UIManager")
+	if ui and ui._cutscene_player:
+		ui._cutscene_player.play_cutscene("cutscene_tutorial_intro")
+
+func _on_play_cutscene_cave() -> void:
+	var ui = get_node_or_null("/root/Main/UIManager")
+	if ui and ui._cutscene_player:
+		ui._cutscene_player.play_cutscene("cutscene_crab_cave")
 
 
 # --- Utility ---

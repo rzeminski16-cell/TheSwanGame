@@ -25,6 +25,10 @@ var _game_over_screen: PanelContainer
 var _notification_container: VBoxContainer
 var _mission_tracker: VBoxContainer
 var _time_display: Label
+var _screen_transition: ColorRect = null
+var _dialogue_box: Control = null
+var _visual_effects: CanvasModulate = null
+var _cutscene_player: Node = null
 var _is_paused: bool = false
 var _in_main_menu: bool = false
 
@@ -37,6 +41,9 @@ func _ready() -> void:
 	_setup_notification_area()
 	_setup_mission_tracker()
 	_setup_time_display()
+	_setup_screen_transition()
+	_setup_dialogue_box()
+	_setup_cutscene_player()
 	_connect_signals()
 	print("UIManager: Ready.")
 
@@ -80,6 +87,46 @@ func _setup_time_display() -> void:
 	_time_display.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_time_display.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_time_display)
+
+
+func _setup_screen_transition() -> void:
+	var script := load("res://scripts/ui/screen_transition.gd")
+	_screen_transition = ColorRect.new()
+	_screen_transition.set_script(script)
+	add_child(_screen_transition)
+
+	# Pass to SceneManager
+	var sm = get_node_or_null("/root/Main/SceneManager")
+	if sm and sm.has_method("set_screen_transition"):
+		sm.set_screen_transition(_screen_transition)
+
+
+func _setup_dialogue_box() -> void:
+	var script := load("res://scripts/ui/dialogue_box.gd")
+	_dialogue_box = PanelContainer.new()
+	_dialogue_box.set_script(script)
+	add_child(_dialogue_box)
+
+
+func _setup_cutscene_player() -> void:
+	var script := load("res://scripts/cutscene_player.gd")
+	_cutscene_player = Node.new()
+	_cutscene_player.set_script(script)
+	add_child(_cutscene_player)
+	if _dialogue_box:
+		_cutscene_player.set_dialogue_box(_dialogue_box)
+
+
+func get_cutscene_player() -> Node:
+	return _cutscene_player
+
+
+func get_screen_transition() -> ColorRect:
+	return _screen_transition
+
+
+func get_visual_effects() -> CanvasModulate:
+	return _visual_effects
 
 
 func _connect_signals() -> void:
@@ -538,56 +585,95 @@ func _get_scene_parent() -> Node:
 
 # --- Signal Handlers ---
 
+func _get_audio() -> Node:
+	return get_node_or_null("/root/Main/AudioManager")
+
+
 func _on_damage_dealt(target: Node, amount: float, is_crit: bool, is_dodge: bool) -> void:
 	if is_instance_valid(target):
 		spawn_damage_popup(target.global_position + Vector2(0, -20), amount, is_crit, is_dodge)
+	var audio := _get_audio()
+	if audio:
+		if is_dodge:
+			audio.play_sfx("dodge")
+		elif is_crit:
+			audio.play_sfx("crit")
+		else:
+			audio.play_sfx("hit")
 
 
 func _on_player_leveled_up(_player_id: int, new_level: int) -> void:
 	show_notification("Level Up! Now level %d" % new_level, 3.0)
+	var audio := _get_audio()
+	if audio:
+		audio.play_sfx("level_up")
 
 
 func _on_item_added(_player_id: int, item_id: String) -> void:
 	var item_data: Dictionary = DataManager.get_item(item_id)
 	var item_name: String = item_data.get("display_name", item_id)
 	show_notification("Picked up: %s" % item_name)
+	var audio := _get_audio()
+	if audio:
+		audio.play_sfx("pickup")
 
 
 func _on_skill_unlocked(_player_id: int, skill_id: String) -> void:
 	var skill_data: Dictionary = DataManager.get_skill(skill_id)
 	var skill_name: String = skill_data.get("display_name", skill_id)
 	show_notification("Skill unlocked: %s" % skill_name, 2.5)
+	var audio := _get_audio()
+	if audio:
+		audio.play_sfx("level_up")
 
 
 func _on_rent_paid(_player_id: int, amount: int) -> void:
 	show_notification("Rent paid: $%d" % amount, 3.0)
+	var audio := _get_audio()
+	if audio:
+		audio.play_sfx("rent_paid")
 
 
 func _on_rent_failed(_player_id: int, amount: int) -> void:
 	show_notification("Cannot afford rent! Need $%d" % amount, 4.0)
+	var audio := _get_audio()
+	if audio:
+		audio.play_sfx("error")
 
 
 func _on_dungeon_started(dungeon_id: String) -> void:
 	var dungeon_data: Dictionary = DataManager.get_dungeon(dungeon_id)
 	var dungeon_name: String = dungeon_data.get("display_name", dungeon_id)
 	show_notification("Entering: %s" % dungeon_name, 2.5)
+	var audio := _get_audio()
+	if audio:
+		audio.play_sfx("dungeon_enter")
 
 
 func _on_dungeon_completed(dungeon_id: String) -> void:
 	var dungeon_data: Dictionary = DataManager.get_dungeon(dungeon_id)
 	var dungeon_name: String = dungeon_data.get("display_name", dungeon_id)
 	show_notification("Dungeon Complete: %s" % dungeon_name, 3.0)
+	var audio := _get_audio()
+	if audio:
+		audio.play_sfx("dungeon_clear")
 
 
 func _on_dungeon_failed(dungeon_id: String) -> void:
 	var dungeon_data: Dictionary = DataManager.get_dungeon(dungeon_id)
 	var dungeon_name: String = dungeon_data.get("display_name", dungeon_id)
 	show_notification("Dungeon Failed: %s" % dungeon_name, 3.0)
+	var audio := _get_audio()
+	if audio:
+		audio.play_sfx("death")
 
 
 func _on_mission_started(mission_id: String) -> void:
 	var data: Dictionary = DataManager.get_mission(mission_id)
 	show_notification("Mission: %s" % data.get("display_name", mission_id), 3.0)
+	var audio := _get_audio()
+	if audio:
+		audio.play_sfx("button")
 
 
 func _on_mission_completed(mission_id: String) -> void:

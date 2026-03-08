@@ -8,6 +8,8 @@ signal scene_changed(new_scene_path: String)
 signal scene_loading_started(scene_path: String)
 
 var _current_scene: Node = null
+var _screen_transition: ColorRect = null
+var _use_transition: bool = true
 
 
 func _ready() -> void:
@@ -15,6 +17,21 @@ func _ready() -> void:
 
 
 func change_scene(scene_path: String) -> void:
+	if _use_transition and _screen_transition:
+		_change_scene_with_transition(scene_path)
+	else:
+		_do_change_scene(scene_path)
+
+
+func _change_scene_with_transition(scene_path: String) -> void:
+	scene_loading_started.emit(scene_path)
+	_screen_transition.fade_out()
+	await _screen_transition.fade_out_complete
+	_do_change_scene(scene_path)
+	_screen_transition.fade_in()
+
+
+func _do_change_scene(scene_path: String) -> void:
 	scene_loading_started.emit(scene_path)
 
 	# Remove current scene if any
@@ -34,6 +51,9 @@ func change_scene(scene_path: String) -> void:
 	# Update GameState
 	_update_scene_type(scene_path)
 	GameState.current_scene_path = scene_path
+
+	# Play appropriate BGM for the scene
+	_update_bgm(scene_path)
 
 	scene_changed.emit(scene_path)
 	print("SceneManager: Changed to " + scene_path)
@@ -67,3 +87,24 @@ func _update_scene_type(scene_path: String) -> void:
 	else:
 		GameState.current_scene_type = "unknown"
 		GameState.is_in_dungeon = false
+
+
+func set_screen_transition(transition: ColorRect) -> void:
+	_screen_transition = transition
+
+
+func _update_bgm(scene_path: String) -> void:
+	var audio = get_node_or_null("/root/Main/AudioManager")
+	if audio == null:
+		return
+	if "Overworld" in scene_path:
+		if TimeManager.is_night():
+			audio.play_bgm("night")
+		else:
+			audio.play_bgm("overworld")
+	elif "Dungeon" in scene_path:
+		audio.play_bgm("dungeon")
+	elif "Cutscene" in scene_path:
+		audio.stop_bgm()
+	else:
+		audio.play_bgm("menu")
