@@ -76,6 +76,14 @@ func resume_time() -> void:
 	is_active = true
 
 
+func set_paused(paused: bool) -> void:
+	## Convenience: pause or resume time based on boolean.
+	if paused:
+		pause_time()
+	else:
+		resume_time()
+
+
 func get_current_day() -> int:
 	return GameState.current_day
 
