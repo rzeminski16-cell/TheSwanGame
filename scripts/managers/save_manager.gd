@@ -111,6 +111,12 @@ func load_game() -> bool:
 	if save_data.has("player_names"):
 		GameState.player_names = save_data["player_names"]
 
+	# Initialize single-player peer assignment if not in multiplayer
+	if not GameState.is_multiplayer:
+		GameState.peer_player_map[1] = 1
+		GameState.player_peer_map[1] = 1
+		GameState.active_peer_ids = [1]
+
 	# Restore scene
 	var scene_path: String = save_data.get("scene_path", "res://scenes/OverworldScene.tscn")
 	var scene_manager = get_node_or_null("/root/Main/SceneManager")
@@ -134,6 +140,12 @@ func new_game() -> void:
 	DungeonManager.load_save_data({})
 	MissionManager.load_save_data({})
 	TimeManager.load_save_data({})
+
+	# Initialize single-player peer assignment if not in multiplayer
+	if not GameState.is_multiplayer:
+		GameState.peer_player_map[1] = 1
+		GameState.player_peer_map[1] = 1
+		GameState.active_peer_ids = [1]
 
 	# Start in overworld
 	var scene_manager = get_node_or_null("/root/Main/SceneManager")
