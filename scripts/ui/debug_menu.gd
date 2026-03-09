@@ -354,12 +354,18 @@ func _on_save_game() -> void:
 	print("DebugMenu: Save game → %s" % ("success" if success else "failed"))
 
 func _on_load_game() -> void:
-	var success := SaveManager.load_game()
-	print("DebugMenu: Load game → %s" % ("success" if success else "failed"))
+	if GameState.current_save_slot > 0:
+		var success := SaveManager.load_game(GameState.current_save_slot, GameState.active_character_id)
+		print("DebugMenu: Load game (slot %d) → %s" % [GameState.current_save_slot, "success" if success else "failed"])
+	else:
+		print("DebugMenu: No active save slot to load from")
 
 func _on_delete_save() -> void:
-	SaveManager.delete_save()
-	print("DebugMenu: Save file deleted")
+	if GameState.current_save_slot > 0:
+		SaveManager.delete_save(GameState.current_save_slot)
+		print("DebugMenu: Save slot %d deleted" % GameState.current_save_slot)
+	else:
+		print("DebugMenu: No active save slot to delete")
 
 
 # --- Multiplayer Actions ---
