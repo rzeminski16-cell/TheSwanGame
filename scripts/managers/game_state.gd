@@ -30,6 +30,11 @@ var current_time_of_day: float = 0.0  # 0.0 to 1.0
 # Pause
 var is_paused: bool = false
 
+# Save slot tracking
+var current_save_slot: int = -1        # 1-5, or -1 if no save loaded
+var current_world_name: String = ""
+var active_character_id: String = ""   # e.g. "char_josh"
+
 
 signal state_changed(key: String, value)
 

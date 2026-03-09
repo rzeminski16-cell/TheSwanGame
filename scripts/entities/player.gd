@@ -11,8 +11,19 @@ var _is_local: bool = true
 @onready var network_sync: NetworkSyncComponent = $NetworkSyncComponent
 
 
+func _ready() -> void:
+	# Tint sprite to active character color
+	_apply_character_color()
+
+
 func set_player_id(id: int) -> void:
 	player_id = id
+
+
+func _apply_character_color() -> void:
+	var sprite = get_node_or_null("PlaceholderSprite")
+	if sprite and GameState.active_character_id != "":
+		sprite.color = PlayerManager.get_character_color()
 
 
 func setup_multiplayer(peer_id: int) -> void:

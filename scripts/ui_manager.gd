@@ -10,6 +10,9 @@ const PAUSE_MENU_SCENE := "res://scenes/ui/PauseMenu.tscn"
 const DEBUG_MENU_SCENE := "res://scenes/ui/DebugMenu.tscn"
 const MAIN_MENU_SCENE := "res://scenes/ui/MainMenu.tscn"
 const GAME_OVER_SCENE := "res://scenes/ui/GameOverScreen.tscn"
+const NEW_GAME_SCENE := "res://scenes/ui/NewGamePanel.tscn"
+const SAVE_SLOT_SCENE := "res://scenes/ui/SaveSlotPanel.tscn"
+const CHAR_SELECT_SCENE := "res://scenes/ui/CharacterSelectPanel.tscn"
 
 signal hud_toggled(visible_state: bool)
 signal screen_opened(screen_name: String)
@@ -22,6 +25,9 @@ var _pause_menu: PanelContainer
 var _debug_menu: PanelContainer
 var _main_menu: PanelContainer
 var _game_over_screen: PanelContainer
+var _new_game_panel: PanelContainer
+var _save_slot_panel: PanelContainer
+var _char_select_panel: PanelContainer
 var _notification_container: VBoxContainer
 var _mission_tracker: VBoxContainer
 var _time_display: Label
@@ -31,6 +37,11 @@ var _visual_effects: Node = null
 var _cutscene_player: Node = null
 var _is_paused: bool = false
 var _in_main_menu: bool = false
+
+# Flow state for load-game (tracks which slot was selected for character pick)
+var _pending_load_slot: int = -1
+# Whether we're loading from pause menu context
+var _loading_from_pause: bool = false
 
 
 func _ready() -> void:
@@ -180,6 +191,7 @@ func _process(_delta: float) -> void:
 func show_main_menu() -> void:
 	_in_main_menu = true
 	hide_hud()
+	_hide_all_subpanels()
 
 	if _main_menu == null:
 		var packed := load(MAIN_MENU_SCENE) as PackedScene
@@ -187,9 +199,7 @@ func show_main_menu() -> void:
 			return
 		_main_menu = packed.instantiate()
 		_main_menu.new_game_pressed.connect(_on_new_game)
-		_main_menu.continue_pressed.connect(_on_continue)
-		_main_menu.host_game_pressed.connect(_on_host_game)
-		_main_menu.join_game_pressed.connect(_on_join_game)
+		_main_menu.load_game_pressed.connect(_on_load_game_from_menu)
 		_main_menu.quit_pressed.connect(_on_quit)
 		add_child(_main_menu)
 
@@ -206,61 +216,138 @@ func hide_main_menu() -> void:
 	screen_closed.emit("main_menu")
 
 
+func _hide_all_subpanels() -> void:
+	if _new_game_panel:
+		_new_game_panel.visible = false
+	if _save_slot_panel:
+		_save_slot_panel.visible = false
+	if _char_select_panel:
+		_char_select_panel.visible = false
+
+
 func _on_new_game() -> void:
-	hide_main_menu()
-	SaveManager.new_game()
+	# Hide main menu, show the new game flow panel
+	if _main_menu:
+		_main_menu.visible = false
+
+	if _new_game_panel == null:
+		var packed := load(NEW_GAME_SCENE) as PackedScene
+		if packed == null:
+			return
+		_new_game_panel = packed.instantiate()
+		_new_game_panel.start_game.connect(_on_new_game_start)
+		_new_game_panel.back_pressed.connect(_on_new_game_back)
+		add_child(_new_game_panel)
+	else:
+		# Reset the panel for a fresh flow
+		_new_game_panel._show_step(0)
+
+	_new_game_panel.visible = true
+	screen_opened.emit("new_game")
 
 
-func _on_continue() -> void:
+func _on_new_game_start(slot_index: int, world_name: String, character_id: String) -> void:
+	# Hide all menu panels
+	_hide_all_subpanels()
 	hide_main_menu()
-	SaveManager.load_game()
+
+	# Start new game
+	SaveManager.new_game(slot_index, world_name, character_id)
+
+	# Play welcome cutscene after a short delay for scene to load
+	await get_tree().create_timer(0.5).timeout
+	if _cutscene_player:
+		_cutscene_player.play_cutscene("cutscene_welcome")
+
+
+func _on_new_game_back() -> void:
+	if _new_game_panel:
+		_new_game_panel.visible = false
+	if _main_menu:
+		_main_menu.visible = true
+
+
+func _on_load_game_from_menu() -> void:
+	_loading_from_pause = false
+	_show_save_slot_panel_for_load()
+
+
+func _show_save_slot_panel_for_load() -> void:
+	if _main_menu:
+		_main_menu.visible = false
+	if _pause_menu:
+		_pause_menu.visible = false
+
+	if _save_slot_panel == null:
+		var packed := load(SAVE_SLOT_SCENE) as PackedScene
+		if packed == null:
+			return
+		_save_slot_panel = packed.instantiate()
+		_save_slot_panel.slot_selected.connect(_on_load_slot_selected)
+		_save_slot_panel.back_pressed.connect(_on_load_slot_back)
+		add_child(_save_slot_panel)
+
+	_save_slot_panel.setup(_save_slot_panel.Mode.LOAD)
+	_save_slot_panel.visible = true
+	screen_opened.emit("save_slots")
+
+
+func _on_load_slot_selected(slot_index: int) -> void:
+	_pending_load_slot = slot_index
+	_save_slot_panel.visible = false
+
+	# Show character select for this slot
+	_show_char_select_for_load(slot_index)
+
+
+func _on_load_slot_back() -> void:
+	if _save_slot_panel:
+		_save_slot_panel.visible = false
+	if _loading_from_pause:
+		if _pause_menu:
+			_pause_menu.visible = true
+	else:
+		if _main_menu:
+			_main_menu.visible = true
+
+
+func _show_char_select_for_load(slot_index: int) -> void:
+	if _char_select_panel == null:
+		var packed := load(CHAR_SELECT_SCENE) as PackedScene
+		if packed == null:
+			return
+		_char_select_panel = packed.instantiate()
+		_char_select_panel.character_selected.connect(_on_load_char_selected)
+		_char_select_panel.back_pressed.connect(_on_load_char_back)
+		add_child(_char_select_panel)
+
+	var slot_info := SaveManager.get_slot_info(slot_index)
+	_char_select_panel.setup(slot_info)
+	_char_select_panel.visible = true
+
+
+func _on_load_char_selected(character_id: String) -> void:
+	_hide_all_subpanels()
+
+	if _loading_from_pause:
+		_unpause()
+	else:
+		hide_main_menu()
+
+	SaveManager.load_game(_pending_load_slot, character_id)
+	_pending_load_slot = -1
+
+
+func _on_load_char_back() -> void:
+	if _char_select_panel:
+		_char_select_panel.visible = false
+	# Go back to slot selection
+	if _save_slot_panel:
+		_save_slot_panel.visible = true
 
 
 func _on_quit() -> void:
 	get_tree().quit()
-
-
-func _on_host_game() -> void:
-	_main_menu.set_status("Starting server...")
-	var success := MultiplayerManager.host_game()
-	if success:
-		_main_menu.set_status("Hosting! Waiting for players...")
-		MultiplayerManager.connection_succeeded.connect(_on_mp_ready, CONNECT_ONE_SHOT)
-		# Host can start immediately — wait a moment for others to join
-		# For now, start after a short delay or when players connect
-		_start_multiplayer_game()
-	else:
-		_main_menu.set_status("Failed to host game")
-
-
-func _on_join_game(address: String) -> void:
-	_main_menu.set_status("Connecting to %s..." % address)
-	var success := MultiplayerManager.join_game(address)
-	if success:
-		MultiplayerManager.connection_succeeded.connect(_on_mp_connected, CONNECT_ONE_SHOT)
-		MultiplayerManager.connection_failed.connect(_on_mp_connect_failed, CONNECT_ONE_SHOT)
-	else:
-		_main_menu.set_status("Failed to connect")
-
-
-func _on_mp_connected() -> void:
-	_main_menu.set_status("Connected! Starting game...")
-	# Wait a moment for assignment sync
-	await get_tree().create_timer(0.5).timeout
-	_start_multiplayer_game()
-
-
-func _on_mp_connect_failed() -> void:
-	_main_menu.set_status("Connection failed!")
-
-
-func _on_mp_ready() -> void:
-	pass  # Host already started
-
-
-func _start_multiplayer_game() -> void:
-	hide_main_menu()
-	SaveManager.new_game()
 
 
 # --- Game Over Screen ---
@@ -302,7 +389,10 @@ func _on_death_continue() -> void:
 func _on_death_load() -> void:
 	## Load most recent save (no penalty).
 	_hide_game_over()
-	SaveManager.load_game()
+	if GameState.current_save_slot > 0:
+		SaveManager.load_game(GameState.current_save_slot, GameState.active_character_id)
+	else:
+		_go_to_main_menu()
 
 
 func _on_death_menu() -> void:
@@ -456,6 +546,7 @@ func _pause() -> void:
 		_pause_menu = packed.instantiate()
 		_pause_menu.resumed.connect(_unpause)
 		_pause_menu.save_requested.connect(_on_pause_save)
+		_pause_menu.switch_character_requested.connect(_on_pause_switch_character)
 		_pause_menu.load_requested.connect(_on_pause_load)
 		_pause_menu.main_menu_requested.connect(_on_pause_main_menu)
 		add_child(_pause_menu)
@@ -481,9 +572,71 @@ func _on_pause_save() -> void:
 		_pause_menu.update_button_states()
 
 
-func _on_pause_load() -> void:
+func _on_pause_switch_character() -> void:
+	if _pause_menu:
+		_pause_menu.visible = false
+
+	if _char_select_panel == null:
+		var packed := load(CHAR_SELECT_SCENE) as PackedScene
+		if packed == null:
+			return
+		_char_select_panel = packed.instantiate()
+		_char_select_panel.character_selected.connect(_on_load_char_selected)
+		_char_select_panel.back_pressed.connect(_on_load_char_back)
+		add_child(_char_select_panel)
+
+	# Disconnect and reconnect for switch mode
+	if _char_select_panel.character_selected.is_connected(_on_load_char_selected):
+		_char_select_panel.character_selected.disconnect(_on_load_char_selected)
+	_char_select_panel.character_selected.connect(_on_switch_char_selected, CONNECT_ONE_SHOT)
+
+	if _char_select_panel.back_pressed.is_connected(_on_load_char_back):
+		_char_select_panel.back_pressed.disconnect(_on_load_char_back)
+	_char_select_panel.back_pressed.connect(_on_switch_char_back, CONNECT_ONE_SHOT)
+
+	var slot_info := SaveManager.get_slot_info(GameState.current_save_slot)
+	_char_select_panel.setup(slot_info)
+	_char_select_panel.visible = true
+
+
+func _on_switch_char_selected(character_id: String) -> void:
+	if _char_select_panel:
+		_char_select_panel.visible = false
+	# Reconnect normal load signals
+	_reconnect_char_select_signals()
+
+	var success := SaveManager.switch_character(character_id)
 	_unpause()
-	SaveManager.load_game()
+	if success:
+		var char_data := DataManager.get_character(character_id)
+		show_notification("Switched to %s" % char_data.get("display_name", character_id), 2.0)
+	else:
+		show_notification("Already playing as that character", 2.0)
+
+
+func _on_switch_char_back() -> void:
+	if _char_select_panel:
+		_char_select_panel.visible = false
+	# Reconnect normal load signals
+	_reconnect_char_select_signals()
+
+	if _pause_menu:
+		_pause_menu.visible = true
+
+
+func _reconnect_char_select_signals() -> void:
+	if _char_select_panel == null:
+		return
+	# Ensure load signals are connected
+	if not _char_select_panel.character_selected.is_connected(_on_load_char_selected):
+		_char_select_panel.character_selected.connect(_on_load_char_selected)
+	if not _char_select_panel.back_pressed.is_connected(_on_load_char_back):
+		_char_select_panel.back_pressed.connect(_on_load_char_back)
+
+
+func _on_pause_load() -> void:
+	_loading_from_pause = true
+	_show_save_slot_panel_for_load()
 
 
 func _on_pause_main_menu() -> void:
@@ -493,6 +646,7 @@ func _on_pause_main_menu() -> void:
 
 func _go_to_main_menu() -> void:
 	MultiplayerManager.disconnect_game()
+	GameState.current_save_slot = -1
 	show_main_menu()
 
 

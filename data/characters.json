@@ -1,0 +1,44 @@
+{
+  "characters": [
+    {
+      "id": "char_josh",
+      "display_name": "Josh",
+      "color": [0.2, 0.6, 1.0, 1.0],
+      "description": "A seasoned campus veteran. Higher health, slower attack speed.",
+      "base_stat_modifiers": {
+        "health_flat": 20,
+        "attack_speed_percent": -0.05
+      }
+    },
+    {
+      "id": "char_hubert",
+      "display_name": "Hubert",
+      "color": [0.3, 0.9, 0.3, 1.0],
+      "description": "Quick and nimble. Faster movement, less health.",
+      "base_stat_modifiers": {
+        "move_speed_flat": 15,
+        "health_flat": -15
+      }
+    },
+    {
+      "id": "char_ed",
+      "display_name": "Ed",
+      "color": [1.0, 0.4, 0.2, 1.0],
+      "description": "A brawler at heart. Higher damage, lower dodge chance.",
+      "base_stat_modifiers": {
+        "damage_flat": 3,
+        "dodge_chance_flat": -0.02
+      }
+    },
+    {
+      "id": "char_jamie",
+      "display_name": "Jamie",
+      "color": [0.8, 0.3, 0.9, 1.0],
+      "description": "Precise and calculating. Higher crit chance, lower stamina.",
+      "base_stat_modifiers": {
+        "crit_chance_flat": 0.03,
+        "stamina_flat": -15
+      }
+    }
+  ]
+}

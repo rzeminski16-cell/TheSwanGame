@@ -1,4 +1,18 @@
 {
+  "cutscene_welcome": {
+    "id": "cutscene_welcome",
+    "trigger_mission": "",
+    "trigger_point": "new_game",
+    "lines": [
+      {"speaker": "???", "text": "Welcome, traveler, to the world of Bay Campus..."},
+      {"speaker": "???", "text": "This is a place where students live, work, and occasionally fight giant crabs."},
+      {"speaker": "???", "text": "You'll need to earn money, pay rent, and survive whatever the campus throws at you."},
+      {"speaker": "???", "text": "There are dungeons to explore, skills to learn, and deliveries to make."},
+      {"speaker": "???", "text": "Choose your battles wisely. The campus rewards the bold... and punishes the reckless."},
+      {"speaker": "You", "text": "...What have I gotten myself into?"},
+      {"speaker": "???", "text": "That's the spirit. Good luck out there!"}
+    ]
+  },
   "cutscene_tutorial_intro": {
     "id": "cutscene_tutorial_intro",
     "trigger_mission": "mission_tutorial",
