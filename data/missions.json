@@ -3,10 +3,16 @@
     {
       "id": "mission_tutorial",
       "display_name": "Move In",
-      "type": "story",
+      "quest_type": "main",
+      "description": "Find Hannan and get settled into your new house on Bay Campus.",
+      "recommended_level": 1,
+      "character_restriction": null,
+      "unlock_conditions": "None — first quest of the game.",
+      "unlock_requirements": [],
+      "quest_origin": "hannan",
       "objectives": [
-        { "type": "talk_to_npc", "npc_id": "hannan" },
-        { "type": "reach_location", "location_id": "player_house" }
+        { "type": "talk_to_npc", "npc_id": "hannan", "description": "Talk to Hannan" },
+        { "type": "reach_location", "location_id": "player_house", "description": "Go to your house" }
       ],
       "rewards": {
         "money": 50,
@@ -18,10 +24,16 @@
     {
       "id": "mission_papers",
       "display_name": "Find Papers",
-      "type": "story",
+      "quest_type": "main",
+      "description": "Lewis has some important papers for you. Track him down and bring them home.",
+      "recommended_level": 1,
+      "character_restriction": null,
+      "unlock_conditions": "Complete 'Move In'.",
+      "unlock_requirements": ["mission_tutorial"],
+      "quest_origin": "lewis",
       "objectives": [
-        { "type": "talk_to_npc", "npc_id": "lewis" },
-        { "type": "return_home" }
+        { "type": "talk_to_npc", "npc_id": "lewis", "description": "Talk to Lewis" },
+        { "type": "return_home", "description": "Return home with the papers" }
       ],
       "rewards": {
         "money": 0,
@@ -33,10 +45,16 @@
     {
       "id": "mission_first_delivery",
       "display_name": "First Delivery",
-      "type": "story",
+      "quest_type": "main",
+      "description": "Luka needs a package delivered. Time to earn your keep.",
+      "recommended_level": 1,
+      "character_restriction": null,
+      "unlock_conditions": "Complete 'Find Papers'.",
+      "unlock_requirements": ["mission_papers"],
+      "quest_origin": "luka",
       "objectives": [
-        { "type": "talk_to_npc", "npc_id": "luka" },
-        { "type": "deliver_item", "delivery_job_id": "delivery_basic_1" }
+        { "type": "talk_to_npc", "npc_id": "luka", "description": "Talk to Luka" },
+        { "type": "deliver_item", "delivery_job_id": "delivery_basic_1", "description": "Complete the delivery" }
       ],
       "rewards": {
         "money": 50,
@@ -48,9 +66,15 @@
     {
       "id": "mission_crab_cave",
       "display_name": "Enter Crab Cave",
-      "type": "story",
+      "quest_type": "main",
+      "description": "Something lurks in the Crab Cave. Explore it and see what's inside.",
+      "recommended_level": 2,
+      "character_restriction": null,
+      "unlock_conditions": "Complete 'First Delivery'.",
+      "unlock_requirements": ["mission_first_delivery"],
+      "quest_origin": "hannan",
       "objectives": [
-        { "type": "enter_dungeon", "dungeon_id": "crab_cave" }
+        { "type": "enter_dungeon", "dungeon_id": "crab_cave", "description": "Enter Crab Cave" }
       ],
       "rewards": {
         "money": 100,
@@ -62,13 +86,314 @@
     {
       "id": "mission_pay_rent",
       "display_name": "Pay Rent",
-      "type": "story",
+      "quest_type": "main",
+      "description": "Rent is due. Head to the Rent Box and pay up before it's too late.",
+      "recommended_level": 2,
+      "character_restriction": null,
+      "unlock_conditions": "Complete 'Enter Crab Cave'.",
+      "unlock_requirements": ["mission_crab_cave"],
+      "quest_origin": "hannan",
       "objectives": [
-        { "type": "reach_location", "location_id": "rent_box" }
+        { "type": "reach_location", "location_id": "rent_box", "description": "Pay rent at the Rent Box" }
       ],
       "rewards": {
         "money": 0,
         "xp": 100,
+        "items": []
+      },
+      "next_mission_id": null
+    },
+    {
+      "id": "quest_001",
+      "display_name": "Luca Delivery",
+      "quest_type": "main",
+      "description": "Luca asked you for a favour. Deliver his package to Hannan across campus.",
+      "recommended_level": 1,
+      "character_restriction": null,
+      "unlock_conditions": "None — available from the start.",
+      "unlock_requirements": [],
+      "quest_origin": "luka",
+      "objectives": [
+        { "type": "talk_to_npc", "npc_id": "luka", "description": "Talk to Luka about the delivery" },
+        { "type": "collect_item", "item_id": "luca_package", "description": "Receive the package from Luka" },
+        { "type": "talk_to_npc", "npc_id": "hannan", "description": "Deliver the package to Hannan" }
+      ],
+      "rewards": {
+        "money": 75,
+        "xp": 100,
+        "items": []
+      },
+      "next_mission_id": null
+    },
+    {
+      "id": "quest_002",
+      "display_name": "Rat King",
+      "quest_type": "side",
+      "description": "Hannan wants you to prove yourself. Head into the Abandoned Tunnel and clear out the rats.",
+      "recommended_level": 2,
+      "character_restriction": null,
+      "unlock_conditions": "Complete 'Luca Delivery' (quest_001).",
+      "unlock_requirements": ["quest_001"],
+      "quest_origin": "hannan",
+      "objectives": [
+        { "type": "talk_to_npc", "npc_id": "hannan", "description": "Talk to Hannan about the rat problem" },
+        { "type": "kill_enemies", "enemy_id": "melee_rat", "count": 5, "description": "Kill 5 rats in the Abandoned Tunnel" },
+        { "type": "talk_to_npc", "npc_id": "hannan", "description": "Report back to Hannan" }
+      ],
+      "rewards": {
+        "money": 0,
+        "xp": 0,
+        "items": ["health_potion"]
+      },
+      "next_mission_id": null
+    },
+    {
+      "id": "quest_003",
+      "display_name": "Endure",
+      "quest_type": "main",
+      "description": "Hannan wants to see if you can take a beating. Survive waves of enemies in the arena.",
+      "recommended_level": 3,
+      "character_restriction": null,
+      "unlock_conditions": "Complete 'Luca Delivery' (quest_001).",
+      "unlock_requirements": ["quest_001"],
+      "quest_origin": "hannan",
+      "objectives": [
+        { "type": "talk_to_npc", "npc_id": "hannan", "description": "Talk to Hannan about the arena trial" },
+        { "type": "survive_waves", "arena_id": "survival_arena", "duration": 60, "description": "Survive in the arena for 60 seconds" },
+        { "type": "talk_to_npc", "npc_id": "hannan", "description": "Report your survival to Hannan" }
+      ],
+      "rewards": {
+        "money": 0,
+        "xp": 300,
+        "items": []
+      },
+      "next_mission_id": null
+    },
+    {
+      "id": "quest_004",
+      "display_name": "Big Smonker",
+      "quest_type": "character",
+      "description": "Someone has been smonking all the dope on campus. Investigate and find the culprit.",
+      "recommended_level": 4,
+      "character_restriction": "char_hubert",
+      "unlock_conditions": "Complete 'Endure' (quest_003). Hubert only.",
+      "unlock_requirements": ["quest_003"],
+      "quest_origin": "hannan",
+      "objectives": [
+        { "type": "talk_to_npc", "npc_id": "hannan", "description": "Talk to Hannan about the smonker" },
+        { "type": "investigate", "clue_id": "smonker_clue_1", "location_id": "player_house", "description": "Search your house for clues" },
+        { "type": "investigate", "clue_id": "smonker_clue_2", "location_id": "tunnel_entrance", "description": "Investigate the Abandoned Tunnel entrance" },
+        { "type": "investigate", "clue_id": "smonker_clue_3", "location_id": "crab_cave_entrance", "description": "Check near Crab Cave for evidence" },
+        { "type": "enter_dungeon", "dungeon_id": "smonker_lair", "description": "Enter the Smonker's hidden lair" },
+        { "type": "kill_enemies", "enemy_id": "big_smonker", "count": 1, "description": "Defeat the Big Smonker" }
+      ],
+      "rewards": {
+        "money": 200,
+        "xp": 500,
+        "items": []
+      },
+      "next_mission_id": null
+    },
+    {
+      "id": "quest_005",
+      "display_name": "Lost Relic",
+      "quest_type": "side",
+      "description": "Lewis mentioned an ancient relic hidden deep in the Crab Cave. Retrieve it and bring it back.",
+      "recommended_level": 2,
+      "character_restriction": null,
+      "unlock_conditions": "Complete 'Luca Delivery' (quest_001).",
+      "unlock_requirements": ["quest_001"],
+      "quest_origin": "lewis",
+      "objectives": [
+        { "type": "talk_to_npc", "npc_id": "lewis", "description": "Ask Lewis about the relic" },
+        { "type": "enter_dungeon", "dungeon_id": "crab_cave", "description": "Enter Crab Cave" },
+        { "type": "collect_item", "item_id": "ancient_relic", "description": "Find the Ancient Relic" },
+        { "type": "talk_to_npc", "npc_id": "lewis", "description": "Return the relic to Lewis" }
+      ],
+      "rewards": {
+        "money": 100,
+        "xp": 150,
+        "items": []
+      },
+      "next_mission_id": null
+    },
+    {
+      "id": "quest_006",
+      "display_name": "The Dispute",
+      "quest_type": "side",
+      "description": "Lewis and Jack are arguing over something. Mediate and resolve the conflict through dialogue.",
+      "recommended_level": 1,
+      "character_restriction": null,
+      "unlock_conditions": "Complete 'Luca Delivery' (quest_001).",
+      "unlock_requirements": ["quest_001"],
+      "quest_origin": "lewis",
+      "objectives": [
+        { "type": "talk_to_npc", "npc_id": "lewis", "description": "Talk to Lewis about the argument" },
+        { "type": "talk_to_npc", "npc_id": "jack", "description": "Hear Jack's side of the story" },
+        { "type": "dialogue_choice", "choice_id": "dispute_resolution", "description": "Choose how to resolve the dispute" },
+        { "type": "talk_to_npc", "npc_id": "lewis", "description": "Inform Lewis of the outcome" }
+      ],
+      "rewards": {
+        "money": 50,
+        "xp": 100,
+        "items": []
+      },
+      "next_mission_id": null
+    },
+    {
+      "id": "quest_007",
+      "display_name": "Bonding Time",
+      "quest_type": "side",
+      "description": "Jack wants to hang out. Complete tasks for him to build your friendship.",
+      "recommended_level": 1,
+      "character_restriction": null,
+      "unlock_conditions": "Complete 'Luca Delivery' (quest_001).",
+      "unlock_requirements": ["quest_001"],
+      "quest_origin": "jack",
+      "objectives": [
+        { "type": "talk_to_npc", "npc_id": "jack", "description": "Talk to Jack" },
+        { "type": "collect_item", "item_id": "snack_item", "description": "Find a snack for Jack" },
+        { "type": "talk_to_npc", "npc_id": "jack", "description": "Give the snack to Jack" },
+        { "type": "reach_location", "location_id": "delivery_board", "description": "Meet Jack at the Delivery Board" }
+      ],
+      "rewards": {
+        "money": 25,
+        "xp": 75,
+        "items": []
+      },
+      "next_mission_id": null
+    },
+    {
+      "id": "quest_008",
+      "display_name": "Tunnel Puzzle",
+      "quest_type": "side",
+      "description": "A strange mechanism blocks a passage in the Abandoned Tunnel. Solve the puzzle to proceed.",
+      "recommended_level": 2,
+      "character_restriction": null,
+      "unlock_conditions": "Complete 'Luca Delivery' (quest_001).",
+      "unlock_requirements": ["quest_001"],
+      "quest_origin": "lewis",
+      "objectives": [
+        { "type": "talk_to_npc", "npc_id": "lewis", "description": "Ask Lewis about the tunnel mechanism" },
+        { "type": "enter_dungeon", "dungeon_id": "abandoned_tunnel", "description": "Enter the Abandoned Tunnel" },
+        { "type": "solve_puzzle", "puzzle_id": "tunnel_switch_puzzle", "description": "Solve the switch puzzle" },
+        { "type": "talk_to_npc", "npc_id": "lewis", "description": "Report back to Lewis" }
+      ],
+      "rewards": {
+        "money": 75,
+        "xp": 125,
+        "items": []
+      },
+      "next_mission_id": null
+    },
+    {
+      "id": "quest_009",
+      "display_name": "Hannan's Riddle",
+      "quest_type": "side",
+      "description": "Hannan loves riddles. Answer correctly and you might get something useful.",
+      "recommended_level": 1,
+      "character_restriction": null,
+      "unlock_conditions": "Complete 'Luca Delivery' (quest_001).",
+      "unlock_requirements": ["quest_001"],
+      "quest_origin": "hannan",
+      "objectives": [
+        { "type": "talk_to_npc", "npc_id": "hannan", "description": "Talk to Hannan" },
+        { "type": "solve_riddle", "riddle_id": "hannan_riddle_1", "description": "Solve Hannan's riddle" },
+        { "type": "talk_to_npc", "npc_id": "hannan", "description": "Tell Hannan your answer" }
+      ],
+      "rewards": {
+        "money": 50,
+        "xp": 100,
+        "items": ["health_potion"]
+      },
+      "next_mission_id": null
+    },
+    {
+      "id": "quest_010",
+      "display_name": "Hold The Line",
+      "quest_type": "side",
+      "description": "Crabs are swarming the cave entrance. Defend it until reinforcements arrive.",
+      "recommended_level": 3,
+      "character_restriction": null,
+      "unlock_conditions": "Complete 'Luca Delivery' (quest_001).",
+      "unlock_requirements": ["quest_001"],
+      "quest_origin": "hannan",
+      "objectives": [
+        { "type": "talk_to_npc", "npc_id": "hannan", "description": "Talk to Hannan about the crab swarm" },
+        { "type": "defend_location", "location_id": "crab_cave_entrance", "duration": 45, "description": "Defend the cave entrance for 45 seconds" },
+        { "type": "talk_to_npc", "npc_id": "hannan", "description": "Report back to Hannan" }
+      ],
+      "rewards": {
+        "money": 100,
+        "xp": 200,
+        "items": []
+      },
+      "next_mission_id": null
+    },
+    {
+      "id": "quest_011",
+      "display_name": "Express Delivery",
+      "quest_type": "side",
+      "description": "A time-sensitive delivery. Complete it before the timer runs out!",
+      "recommended_level": 2,
+      "character_restriction": null,
+      "unlock_conditions": "Complete 'Luca Delivery' (quest_001).",
+      "unlock_requirements": ["quest_001"],
+      "quest_origin": "luka",
+      "objectives": [
+        { "type": "talk_to_npc", "npc_id": "luka", "description": "Talk to Luka about the urgent delivery" },
+        { "type": "timed_objective", "time_limit": 90, "sub_type": "deliver_item", "delivery_job_id": "delivery_basic_1", "description": "Complete the delivery within 90 seconds" },
+        { "type": "talk_to_npc", "npc_id": "luka", "description": "Report back to Luka" }
+      ],
+      "rewards": {
+        "money": 150,
+        "xp": 100,
+        "items": []
+      },
+      "next_mission_id": null
+    },
+    {
+      "id": "quest_012",
+      "display_name": "Sneak",
+      "quest_type": "side",
+      "description": "Infiltrate a guarded area without being detected. Stealth is key.",
+      "recommended_level": 3,
+      "character_restriction": null,
+      "unlock_conditions": "Complete 'Luca Delivery' (quest_001).",
+      "unlock_requirements": ["quest_001"],
+      "quest_origin": "jack",
+      "objectives": [
+        { "type": "talk_to_npc", "npc_id": "jack", "description": "Talk to Jack about the infiltration" },
+        { "type": "stealth", "area_id": "guarded_zone", "description": "Sneak through the guarded area undetected" },
+        { "type": "collect_item", "item_id": "stolen_plans", "description": "Grab the item" },
+        { "type": "talk_to_npc", "npc_id": "jack", "description": "Bring the item back to Jack" }
+      ],
+      "rewards": {
+        "money": 125,
+        "xp": 175,
+        "items": []
+      },
+      "next_mission_id": null
+    },
+    {
+      "id": "quest_013",
+      "display_name": "The Crossroads",
+      "quest_type": "main",
+      "description": "A major decision awaits. Your choice will have lasting consequences.",
+      "recommended_level": 3,
+      "character_restriction": null,
+      "unlock_conditions": "Complete 'Luca Delivery' (quest_001).",
+      "unlock_requirements": ["quest_001"],
+      "quest_origin": "hannan",
+      "objectives": [
+        { "type": "talk_to_npc", "npc_id": "hannan", "description": "Talk to Hannan about the situation" },
+        { "type": "talk_to_npc", "npc_id": "luka", "description": "Hear Luka's perspective" },
+        { "type": "talk_to_npc", "npc_id": "lewis", "description": "Hear Lewis's perspective" },
+        { "type": "make_choice", "choice_id": "crossroads_decision", "description": "Make your decision" }
+      ],
+      "rewards": {
+        "money": 100,
+        "xp": 250,
         "items": []
       },
       "next_mission_id": null

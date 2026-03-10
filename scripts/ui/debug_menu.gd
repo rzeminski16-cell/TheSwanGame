@@ -90,6 +90,10 @@ func _build_ui() -> void:
 	_add_button("Missions", "Start Crab Cave", _on_start_crab_cave_mission)
 	_add_button("Missions", "Start Pay Rent", _on_start_pay_rent)
 	_add_button("Missions", "Complete Current Obj", _on_complete_objective)
+	_add_button("Missions", "Complete Tracked Mission", _on_complete_tracked_mission)
+	_add_button("Missions", "Start All Unlockable", _on_start_all_unlockable)
+	_add_button("Missions", "Print All Missions", _on_print_all_missions)
+	_add_button("Missions", "Open Quest Log", _on_open_quest_log)
 
 	# --- Scenes Category ---
 	_add_category("Scenes")
@@ -321,6 +325,37 @@ func _on_complete_objective() -> void:
 		print("DebugMenu: Completed objective %d" % idx)
 	else:
 		print("DebugMenu: All objectives already complete")
+
+func _on_complete_tracked_mission() -> void:
+	var tid := MissionManager.get_tracked_mission_id()
+	if tid == "":
+		print("DebugMenu: No tracked mission")
+		return
+	MissionManager.debug_complete_mission(tid)
+
+func _on_start_all_unlockable() -> void:
+	var unlockable := MissionManager.get_unlockable_missions()
+	for mission_data in unlockable:
+		MissionManager.start_mission(mission_data.get("id", ""))
+	print("DebugMenu: Started %d unlockable missions" % unlockable.size())
+
+func _on_print_all_missions() -> void:
+	print("--- All Missions ---")
+	for mission_data in DataManager.get_all_missions():
+		var mid: String = mission_data.get("id", "")
+		var state: int = MissionManager.get_mission_state(mid)
+		var state_name := "NOT_STARTED"
+		match state:
+			MissionManager.MissionState.ACTIVE: state_name = "ACTIVE"
+			MissionManager.MissionState.COMPLETED: state_name = "COMPLETED"
+			MissionManager.MissionState.FAILED: state_name = "FAILED"
+		print("  [%s] %s (%s) — %s" % [state_name, mission_data.get("display_name", mid), mission_data.get("quest_type", "?"), mission_data.get("unlock_conditions", "?")])
+	print("--------------------")
+
+func _on_open_quest_log() -> void:
+	var ui = get_node_or_null("/root/Main/UIManager")
+	if ui and ui.has_method("toggle_quest_log"):
+		ui.toggle_quest_log()
 
 
 # --- Scene Actions ---

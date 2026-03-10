@@ -7,7 +7,9 @@ var current_scene_type: String = ""  # "overworld", "dungeon", "minigame", "cuts
 var current_scene_path: String = ""
 
 # Mission state
-var current_mission_id: String = ""
+var current_mission_id: String = ""  # Legacy — kept for compat; use tracked_mission_id
+var tracked_mission_id: String = ""  # The mission shown in the HUD tracker
+var active_mission_ids: Array = []   # All currently active missions
 
 # Multiplayer
 var player_count: int = 1

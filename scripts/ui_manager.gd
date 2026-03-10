@@ -1,7 +1,7 @@
 extends CanvasLayer
 ## UIManager — Manages all UI elements: HUD, panels, popups, notifications, pause, debug menu.
 ## Child of Main.tscn (not an autoload).
-## Toggle screens: I = Inventory, K = Skill Tree, ESC = Pause, F3 = Debug Menu.
+## Toggle screens: I = Inventory, K = Skill Tree, L = Quest Log, ESC = Pause, F3 = Debug Menu.
 
 const HUD_SCENE := "res://scenes/ui/HUD.tscn"
 const SKILL_TREE_SCENE := "res://scenes/ui/SkillTreePanel.tscn"
@@ -13,6 +13,7 @@ const GAME_OVER_SCENE := "res://scenes/ui/GameOverScreen.tscn"
 const NEW_GAME_SCENE := "res://scenes/ui/NewGamePanel.tscn"
 const SAVE_SLOT_SCENE := "res://scenes/ui/SaveSlotPanel.tscn"
 const CHAR_SELECT_SCENE := "res://scenes/ui/CharacterSelectPanel.tscn"
+const QUEST_LOG_SCENE := "res://scenes/ui/QuestLogPanel.tscn"
 
 signal hud_toggled(visible_state: bool)
 signal screen_opened(screen_name: String)
@@ -28,6 +29,7 @@ var _game_over_screen: PanelContainer
 var _new_game_panel: PanelContainer
 var _save_slot_panel: PanelContainer
 var _char_select_panel: PanelContainer
+var _quest_log_panel: PanelContainer
 var _notification_container: VBoxContainer
 var _mission_tracker: VBoxContainer
 var _time_display: Label
@@ -484,6 +486,43 @@ func _close_skill_tree() -> void:
 		screen_closed.emit("skill_tree")
 
 
+# --- Quest Log Panel ---
+
+func toggle_quest_log() -> void:
+	if _is_paused or _in_main_menu:
+		return
+
+	# Close other panels if open
+	if _inventory_panel and _inventory_panel.visible:
+		_close_inventory()
+	if _skill_tree_panel and _skill_tree_panel.visible:
+		_close_skill_tree()
+
+	if _quest_log_panel and _quest_log_panel.visible:
+		_close_quest_log()
+	else:
+		_open_quest_log()
+
+
+func _open_quest_log() -> void:
+	if _quest_log_panel == null:
+		var packed := load(QUEST_LOG_SCENE) as PackedScene
+		if packed == null:
+			return
+		_quest_log_panel = packed.instantiate()
+		_quest_log_panel.closed.connect(_close_quest_log)
+		add_child(_quest_log_panel)
+	_quest_log_panel.visible = true
+	_quest_log_panel._refresh()
+	screen_opened.emit("quest_log")
+
+
+func _close_quest_log() -> void:
+	if _quest_log_panel:
+		_quest_log_panel.visible = false
+		screen_closed.emit("quest_log")
+
+
 # --- Debug Menu ---
 
 func toggle_debug_menu() -> void:
@@ -526,6 +565,9 @@ func _toggle_pause() -> void:
 		return
 	if _inventory_panel and _inventory_panel.visible:
 		_close_inventory()
+		return
+	if _quest_log_panel and _quest_log_panel.visible:
+		_close_quest_log()
 		return
 
 	if _is_paused:
@@ -660,17 +702,17 @@ func _update_mission_tracker() -> void:
 	for child in _mission_tracker.get_children():
 		child.queue_free()
 
-	var active_id := MissionManager.get_active_mission_id()
-	if active_id == "":
+	var tracked_id := MissionManager.get_tracked_mission_id()
+	if tracked_id == "":
 		return
 
-	var data: Dictionary = MissionManager.get_active_mission_data()
+	var data: Dictionary = MissionManager.get_tracked_mission_data()
 	if data.is_empty():
 		return
 
 	# Mission name
 	var title := Label.new()
-	title.text = data.get("display_name", active_id)
+	title.text = data.get("display_name", tracked_id)
 	title.add_theme_font_size_override("font_size", 14)
 	title.add_theme_color_override("font_color", Color(1.0, 0.9, 0.5))
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -679,7 +721,7 @@ func _update_mission_tracker() -> void:
 
 	# Objectives
 	var objectives: Array = data.get("objectives", [])
-	var status: Array = MissionManager.get_objective_status(active_id)
+	var status: Array = MissionManager.get_objective_status(tracked_id)
 
 	for i in range(objectives.size()):
 		var obj: Dictionary = objectives[i]

@@ -31,6 +31,9 @@ func _input(event: InputEvent) -> void:
 	elif event.is_action_pressed("toggle_skill_tree"):
 		ui_manager.toggle_skill_tree()
 		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("toggle_quest_log"):
+		ui_manager.toggle_quest_log()
+		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("pause"):
 		ui_manager._toggle_pause()
 		get_viewport().set_input_as_handled()
