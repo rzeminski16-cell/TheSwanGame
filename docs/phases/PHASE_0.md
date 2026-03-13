@@ -32,17 +32,17 @@ scripts/
 ├── ui_manager.gd                # UI layer stub
 ├── audio_manager.gd             # Audio stub
 └── managers/
-    ├── data_manager.gd          # FULLY IMPLEMENTED — loads all JSON
-    ├── game_state.gd            # Runtime state container (stub)
-    ├── save_manager.gd          # Save/load (stub)
-    ├── multiplayer_manager.gd   # Multiplayer (stub)
-    ├── player_manager.gd        # Player stats/spawning (stub)
-    ├── inventory_manager.gd     # Inventory (stub)
-    ├── combat_manager.gd        # Combat resolution (stub)
-    ├── dungeon_manager.gd       # Dungeon lifecycle (stub)
-    ├── economy_manager.gd       # Money tracking (stub)
-    ├── time_manager.gd          # Day/night cycle (stub)
-    └── mission_manager.gd       # Mission tracking (stub)
+	├── data_manager.gd          # FULLY IMPLEMENTED — loads all JSON
+	├── game_state.gd            # Runtime state container (stub)
+	├── save_manager.gd          # Save/load (stub)
+	├── multiplayer_manager.gd   # Multiplayer (stub)
+	├── player_manager.gd        # Player stats/spawning (stub)
+	├── inventory_manager.gd     # Inventory (stub)
+	├── combat_manager.gd        # Combat resolution (stub)
+	├── dungeon_manager.gd       # Dungeon lifecycle (stub)
+	├── economy_manager.gd       # Money tracking (stub)
+	├── time_manager.gd          # Day/night cycle (stub)
+	└── mission_manager.gd       # Mission tracking (stub)
 
 data/
 ├── global_config.json           # Balance tuning (XP curves, scaling, caps)
@@ -88,12 +88,12 @@ Edit `res://data/enemies.json`. Each enemy entry has:
   "display_name": "Shown to player",
   "type": "melee | ranged | boss",
   "base_stats": {
-    "health": 50,
-    "damage": 8,
-    "move_speed": 80,
-    "attack_speed": 1.0,
-    "crit_chance": 0.0,
-    "dodge_chance": 0.0
+	"health": 50,
+	"damage": 8,
+	"move_speed": 80,
+	"attack_speed": 1.0,
+	"crit_chance": 0.0,
+	"dodge_chance": 0.0
   },
   "xp_reward": 10,
   "money_drop": { "min": 5, "max": 10 },
@@ -114,7 +114,7 @@ Edit `res://data/items.json`. Each item:
   "rarity": "common | rare | epic",
   "type": "passive",
   "effects": [
-    { "stat": "damage", "modifier_type": "percent", "value": 0.10 }
+	{ "stat": "damage", "modifier_type": "percent", "value": 0.10 }
   ],
   "stackable": false
 }
@@ -133,7 +133,7 @@ Edit `res://data/skills.json`. Each skill node:
   "display_name": "Shown in skill tree",
   "description": "Tooltip text",
   "effects": [
-    { "stat": "damage", "modifier_type": "percent", "value": 0.05 }
+	{ "stat": "damage", "modifier_type": "percent", "value": 0.05 }
   ],
   "max_level": 1,
   "requirements": ["other_skill_id"]
@@ -152,12 +152,12 @@ Edit `res://data/dungeons.json`. Each dungeon:
   "type": "story | replayable",
   "base_difficulty": 1,
   "rooms": [
-    {
-      "room_type": "combat | boss",
-      "enemy_groups": [
-        { "enemy_id": "melee_rat", "count": 5 }
-      ]
-    }
+	{
+	  "room_type": "combat | boss",
+	  "enemy_groups": [
+		{ "enemy_id": "melee_rat", "count": 5 }
+	  ]
+	}
   ],
   "replayable": false
 }
@@ -175,8 +175,8 @@ Edit `res://data/missions.json`. Missions chain via `next_mission_id`:
   "display_name": "Move In",
   "type": "story",
   "objectives": [
-    { "type": "talk_to_npc", "npc_id": "hannan" },
-    { "type": "reach_location", "location_id": "player_house" }
+	{ "type": "talk_to_npc", "npc_id": "hannan" },
+	{ "type": "reach_location", "location_id": "player_house" }
   ],
   "rewards": { "money": 50, "xp": 50, "items": [] },
   "next_mission_id": "mission_papers"
