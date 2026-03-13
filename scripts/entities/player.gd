@@ -6,9 +6,12 @@ extends CharacterBody2D
 var player_id: int = 1
 var _is_local: bool = true
 
+var last_direction: Vector2 = Vector2.RIGHT
+
 @onready var health_component: HealthComponent = $HealthComponent
 @onready var stamina_component: StaminaComponent = $StaminaComponent
 @onready var network_sync: NetworkSyncComponent = $NetworkSyncComponent
+@onready var animated_sprite_2d: AnimatedSprite2D = $AnimatedSprite2D
 
 
 func _ready() -> void:
@@ -59,5 +62,26 @@ func _physics_process(_delta: float) -> void:
 		input_dir = input_dir.normalized()
 
 	var speed: float = PlayerManager.get_effective_stat(player_id, "move_speed")
-	velocity = input_dir * speed
+	if input_dir != Vector2.ZERO:
+		velocity = input_dir * speed
+		last_direction = input_dir
+	else:
+		velocity = Vector2.ZERO
+		input_dir = last_direction
 	move_and_slide()
+	process_animation(input_dir)
+
+func play_animation(prefix: String, dir: Vector2) -> void:
+	if dir.x != 0:
+		animated_sprite_2d.flip_h = dir.x < 0
+		animated_sprite_2d.play(prefix + "_right")
+	elif dir.y < 0:
+		animated_sprite_2d.play(prefix + "_up")
+	elif dir.y > 0:
+		animated_sprite_2d.play(prefix + "_down")
+		
+func process_animation(direction: Vector2) -> void:
+	if velocity != Vector2.ZERO:
+		play_animation("run", direction)
+	else:
+		play_animation("idle", direction)

@@ -1,6 +1,11 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://yvxb5f1ou4cr"]
 
-[ext_resource type="Script" path="res://scripts/overworld_scene.gd" id="1"]
+[ext_resource type="Script" uid="uid://cfc4exxdgul65" path="res://scripts/overworld_scene.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://bylknchff6khv" path="res://scenes/entities/Player.tscn" id="2_c0ja5"]
 
-[node name="OverworldScene" type="Node2D"]
+[node name="OverworldScene" type="Node2D" unique_id=784396722]
 script = ExtResource("1")
+
+[node name="CharacterBody2D" parent="." unique_id=2118669530 instance=ExtResource("2_c0ja5")]
+position = Vector2(231, 76)
+scale = Vector2(4, 4)
